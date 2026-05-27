@@ -1,1 +1,23 @@
 @import "tailwindcss";
+
+button {
+  transition:
+    background-color 120ms ease,
+    color 120ms ease,
+    border-color 120ms ease,
+    text-decoration-color 120ms ease;
+}
+button:hover,
+button:focus {
+  background-color: transparent !important;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  color: #0f172a; /* slate-900 */
+  cursor: pointer;
+}
+
+/* Keep focused buttons accessible (subtle outline for keyboard users) */
+button:focus {
+  outline: 2px solid rgba(15, 23, 42, 0.08);
+  outline-offset: 2px;
+}

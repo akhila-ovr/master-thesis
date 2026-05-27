@@ -42,71 +42,87 @@
   const students = [
     {
       name: "Finn D.",
+      group: "A",
       summary: "Strong; explains ingestion pathway",
       transcript: "I saw a turtle with plastic in its stomach...",
     },
     {
       name: "Omar S.",
+      group: "A",
       summary: "Mentions habitat loss",
       transcript: "Animals lose their homes when we build here...",
     },
     {
       name: "Noah R.",
+      group: "B",
       summary: "Surface-level",
       transcript: "Plastic is bad for animals.",
     },
     {
       name: "Amara K.",
+      group: "B",
       summary: "Connects to community",
       transcript: "We can organize a clean-up...",
     },
     {
       name: "James T.",
+      group: "B",
       summary: "Good detail on ingestion",
       transcript: "Ingestion causes blockages and toxins...",
     },
     {
       name: "Luca B.",
+      group: "C",
       summary: "Short, correct",
       transcript: "They eat plastic by mistake.",
     },
     {
       name: "Priya N.",
+      group: "C",
       summary: "Reflective",
       transcript: "I worry about long-term effects...",
     },
     {
       name: "Yara H.",
+      group: "C",
       summary: "Surface",
       transcript: "Plastic is bad for sea life.",
     },
     {
       name: "Sofia M.",
+      group: "D",
       summary: "Mechanism noted",
       transcript: "Microplastics enter the food chain...",
     },
     {
       name: "Lina P.",
+      group: "D",
       summary: "Personal connection",
       transcript: "My local beach had plastic everywhere...",
     },
   ];
 
   let modalOpen = false;
-  let selectedIndex: number | null = null;
+  let filterGroup: string | null = null;
+  $: filtered = filterGroup
+    ? students.filter((s) => s.group === filterGroup)
+    : students;
+  let selectedStudent = null;
   let showTranscript = false;
-  function openModal() {
+  function openModal(group: string | null = null) {
     modalOpen = true;
-    selectedIndex = null;
+    filterGroup = group;
+    selectedStudent = null;
     showTranscript = false;
   }
   function closeModal() {
     modalOpen = false;
-    selectedIndex = null;
+    filterGroup = null;
+    selectedStudent = null;
     showTranscript = false;
   }
   function selectStudent(i: number) {
-    selectedIndex = i;
+    selectedStudent = filtered[i];
     showTranscript = false;
   }
   function toggleTranscript() {
@@ -258,10 +274,11 @@
           </div>
           <div class="mt-3 flex gap-2">
             <button
-              on:click={openModal}
+              on:click={() => openModal()}
               class="rounded-full border border-slate-200 px-3 py-1 text-xs text-slate-700 bg-white"
               >See all {students.length} reflections</button
             >
+
             <button
               class="rounded-full border border-slate-200 px-3 py-1 text-xs text-slate-700 bg-white"
               >Override summary</button
@@ -274,71 +291,115 @@
             Student groups — quant + reflection
           </h2>
           <div class="mt-3 space-y-3">
-            <div class="rounded p-3 bg-slate-50 border border-slate-100">
-              <div class="flex items-start justify-between">
-                <div>
+            <div
+              class="rounded p-3 bg-slate-50 border border-slate-100 flex flex-col justify-between"
+            >
+              <div>
+                <div class="flex items-center justify-between">
                   <div
                     class="text-xs text-rose-700 inline-block bg-rose-100 px-2 py-1 rounded"
                   >
                     Group A
                   </div>
-                  <div class="mt-2 text-sm text-slate-700">
-                    Low score + error in reflection — Scores below 55%. Need
-                    re-teaching.
+                  <div class="text-sm text-slate-600">
+                    {students.filter((s) => s.group === "A").length} students
                   </div>
                 </div>
-                <div class="text-sm text-slate-600">2 students</div>
+                <div class="mt-3 text-sm text-slate-700">
+                  Low score + error in reflection — Scores below 55%. Need
+                  re-teaching.
+                </div>
+              </div>
+              <div class="mt-4">
+                <button
+                  on:click={() => openModal("A")}
+                  class="rounded-full border border-slate-200 px-3 py-1 text-xs text-slate-700 bg-white"
+                  >Show students</button
+                >
               </div>
             </div>
 
-            <div class="rounded p-3 bg-slate-50 border border-slate-100">
-              <div class="flex items-start justify-between">
-                <div>
+            <div
+              class="rounded p-3 bg-slate-50 border border-slate-100 flex flex-col justify-between"
+            >
+              <div>
+                <div class="flex items-center justify-between">
                   <div
                     class="text-xs text-indigo-700 inline-block bg-indigo-100 px-2 py-1 rounded"
                   >
                     Group B
                   </div>
-                  <div class="mt-2 text-sm text-slate-700">
-                    High score, surface reflection — 80%+. Needs metacognitive
-                    prompting.
+                  <div class="text-sm text-slate-600">
+                    {students.filter((s) => s.group === "B").length} students
                   </div>
                 </div>
-                <div class="text-sm text-slate-600">3 students</div>
+                <div class="mt-3 text-sm text-slate-700">
+                  High score, surface reflection — 80%+. Needs metacognitive
+                  prompting.
+                </div>
+              </div>
+              <div class="mt-4">
+                <button
+                  on:click={() => openModal("B")}
+                  class="rounded-full border border-slate-200 px-3 py-1 text-xs text-slate-700 bg-white"
+                  >Show students</button
+                >
               </div>
             </div>
 
-            <div class="rounded p-3 bg-slate-50 border border-slate-100">
-              <div class="flex items-start justify-between">
-                <div>
+            <div
+              class="rounded p-3 bg-slate-50 border border-slate-100 flex flex-col justify-between"
+            >
+              <div>
+                <div class="flex items-center justify-between">
                   <div
                     class="text-xs text-emerald-700 inline-block bg-emerald-100 px-2 py-1 rounded"
                   >
                     Group C
                   </div>
-                  <div class="mt-2 text-sm text-slate-700">
-                    Strong score + rich reflection — Scores 80%+. Reflections
-                    show specific mechanisms and personal connections.
+                  <div class="text-sm text-slate-600">
+                    {students.filter((s) => s.group === "C").length} students
                   </div>
                 </div>
-                <div class="text-sm text-slate-600">3 students</div>
+                <div class="mt-3 text-sm text-slate-700">
+                  Strong score + rich reflection — Scores 80%+. Reflections show
+                  specific mechanisms and personal connections.
+                </div>
+              </div>
+              <div class="mt-4">
+                <button
+                  on:click={() => openModal("C")}
+                  class="rounded-full border border-slate-200 px-3 py-1 text-xs text-slate-700 bg-white"
+                  >Show students</button
+                >
               </div>
             </div>
 
-            <div class="rounded p-3 bg-slate-50 border border-slate-100">
-              <div class="flex items-start justify-between">
-                <div>
+            <div
+              class="rounded p-3 bg-slate-50 border border-slate-100 flex flex-col justify-between"
+            >
+              <div>
+                <div class="flex items-center justify-between">
                   <div
                     class="text-xs text-yellow-700 inline-block bg-yellow-100 px-2 py-1 rounded"
                   >
                     Group D
                   </div>
-                  <div class="mt-2 text-sm text-slate-700">
-                    Mixed performance — Some correct answers but shallow
-                    reflections. Recommend targeted prompts.
+                  <div class="text-sm text-slate-600">
+                    {students.filter((s) => s.group === "D").length} students
                   </div>
                 </div>
-                <div class="text-sm text-slate-600">2 students</div>
+                <div class="mt-3 text-sm text-slate-700">
+                  Mixed performance — Some correct answers but shallow
+                  reflections. Recommend targeted prompts.
+                </div>
+              </div>
+              <div class="mt-4">
+                <button
+                  on:click={() => openModal("D")}
+                  class="rounded-full border border-slate-200 px-3 py-1 text-xs text-slate-700 bg-white"
+                  >Show students</button
+                >
               </div>
             </div>
           </div>
@@ -357,9 +418,9 @@
             class="w-1/3 border-r border-slate-100 max-h-[70vh] overflow-auto"
           >
             <div class="p-4 text-sm font-semibold">
-              Reflections ({students.length})
+              Reflections ({filtered.length})
             </div>
-            {#each students as st, i}
+            {#each filtered as st, i}
               <button
                 on:click={() => selectStudent(i)}
                 class="w-full text-left p-3 hover:bg-slate-50 border-t border-slate-100"
@@ -373,12 +434,12 @@
           <div class="w-2/3 p-4">
             <div class="flex items-start justify-between">
               <div>
-                {#if selectedIndex !== null}
+                {#if selectedStudent}
                   <div class="text-base font-semibold">
-                    {students[selectedIndex].name}
+                    {selectedStudent.name}
                   </div>
                   <div class="text-sm text-slate-600 mt-1">
-                    {students[selectedIndex].summary}
+                    {selectedStudent.summary}
                   </div>
                 {:else}
                   <div class="text-base font-semibold">Select a student</div>
@@ -395,11 +456,11 @@
               </div>
             </div>
 
-            {#if selectedIndex !== null}
+            {#if selectedStudent}
               <div class="mt-4">
                 <div class="text-sm text-slate-700">Summary</div>
                 <div class="mt-2 text-sm text-slate-800">
-                  {students[selectedIndex].summary}
+                  {selectedStudent.summary}
                 </div>
                 <div class="mt-4">
                   <button
@@ -412,9 +473,7 @@
                 </div>
                 {#if showTranscript}
                   <pre
-                    class="mt-3 p-3 bg-slate-50 text-sm text-slate-700 rounded max-h-48 overflow-auto">{students[
-                      selectedIndex
-                    ].transcript}</pre>
+                    class="mt-3 p-3 bg-slate-50 text-sm text-slate-700 rounded max-h-48 overflow-auto">{selectedStudent.transcript}</pre>
                 {/if}
               </div>
             {/if}
