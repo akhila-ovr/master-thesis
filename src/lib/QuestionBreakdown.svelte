@@ -4,6 +4,7 @@
   export let questionTypes: Array<any> = [];
   export let creative: Array<any> = [];
   export let debate: any = {};
+  export let themeColors: any = {};
 
   let modalOpen = false;
   let modalTitle = "";
@@ -30,10 +31,50 @@
   function closeDebateModal() {
     debateModalOpen = false;
   }
+
+  function pieGradient(parts: number[], colors?: string[]) {
+    const a = parts?.[0] ?? 0;
+    const b = parts?.[1] ?? 0;
+    const c = parts?.[2] ?? 0;
+    const deg1 = a * 3.6;
+    const deg2 = (a + b) * 3.6;
+    const defaults = (themeColors && themeColors.pastelPalette) || [
+      "#A7E0FF",
+      "#FFD8B5",
+      "#CFF7E6",
+    ];
+    const palette = colors && colors.length >= 3 ? colors : defaults;
+    return `conic-gradient(${palette[0]} 0deg ${deg1}deg, ${palette[1]} ${deg1}deg ${deg2}deg, ${palette[2]} ${deg2}deg 360deg)`;
+  }
 </script>
 
 <div class="rounded-lg border border-slate-200 bg-white p-4">
   <h2 class="text-sm font-semibold text-slate-900">Question type breakdown</h2>
+  <div class="mt-2 text-xs text-slate-600">
+    <div class="flex items-center gap-4">
+      <div class="flex items-center gap-2">
+        <span
+          class="w-3 h-3 rounded-full"
+          style="background:{themeColors?.primary ?? '#60A5FA'}"
+        ></span>
+        <span>Right</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <span
+          class="w-3 h-3 rounded-full"
+          style="background:{themeColors?.accent ?? '#FDBA74'}"
+        ></span>
+        <span>Right after retry</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <span
+          class="w-3 h-3 rounded-full"
+          style="background:{themeColors?.pink ?? '#FCA5A5'}"
+        ></span>
+        <span>Wrong</span>
+      </div>
+    </div>
+  </div>
   <div class="mt-4 space-y-4">
     {#each questionTypes as q, idx}
       <div>
@@ -45,20 +86,39 @@
             >Show details</button
           >
         </div>
-        <div class="h-3 w-full rounded-full bg-slate-100 overflow-hidden">
-          <div
-            style="width:{q.parts?.[0] ?? 0}%"
-            class="h-full bg-sky-300 float-left"
-          ></div>
-          <div
-            style="width:{q.parts?.[1] ?? 0}%"
-            class="h-full bg-amber-200 float-left"
-          ></div>
-          <div
-            style="width:{q.parts?.[2] ?? 0}%"
-            class="h-full bg-rose-200 float-left"
-          ></div>
-        </div>
+        {#if q.label && q.label.toLowerCase().includes("true")}
+          <div class="h-3 w-full rounded-full bg-slate-100 overflow-hidden">
+            <div
+              style="width:{q.parts?.[0] ??
+                0}%; background: {themeColors?.primary ?? '#60A5FA'}"
+              class="h-full float-left"
+            ></div>
+            <div
+              style="width:{(q.parts?.[1] ?? 0) +
+                (q.parts?.[2] ?? 0)}%; background: {themeColors?.pink ??
+                '#FCA5A5'}"
+              class="h-full float-left"
+            ></div>
+          </div>
+        {:else}
+          <div class="h-3 w-full rounded-full bg-slate-100 overflow-hidden">
+            <div
+              style="width:{q.parts?.[0] ??
+                0}%; background: {themeColors?.primary ?? '#60A5FA'}"
+              class="h-full float-left"
+            ></div>
+            <div
+              style="width:{q.parts?.[1] ??
+                0}%; background: {themeColors?.accent ?? '#FDBA74'}"
+              class="h-full float-left"
+            ></div>
+            <div
+              style="width:{q.parts?.[2] ??
+                0}%; background: {themeColors?.pink ?? '#FCA5A5'}"
+              class="h-full float-left"
+            ></div>
+          </div>
+        {/if}
       </div>
     {/each}
   </div>
@@ -76,12 +136,14 @@
 
     <div class="h-3 w-full rounded-full bg-slate-100 overflow-hidden">
       <div
-        class="h-full float-left bg-sky-300"
-        style="width:{debate?.left?.pct ?? 0}%"
+        class="h-full float-left"
+        style="width:{debate?.left?.pct ??
+          0}%; background: {themeColors.primary ?? '#60A5FA'}"
       ></div>
       <div
-        class="h-full float-left bg-emerald-300"
-        style="width:{debate?.right?.pct ?? 0}%"
+        class="h-full float-left"
+        style="width:{debate?.right?.pct ??
+          0}%; background: {themeColors.mint ?? '#86EFAC'}"
       ></div>
     </div>
 
@@ -92,23 +154,55 @@
   </div>
 
   <div class="mt-4">
-    <h3 class="text-sm font-semibold text-slate-900 mb-2">
+    <h3 class="text-sm font-semibold text-slate-900 mb-3">
       Creative story: which path did students take?
     </h3>
-    <div class="space-y-3">
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
       {#each creative as c}
-        <div>
-          <div class="flex items-center justify-between text-sm text-slate-700">
-            <div class="w-2/3">{c.label}</div>
-            <div class="w-1/3 text-right text-slate-500">{c.pct}%</div>
-          </div>
-          <div class="h-2 w-full rounded-full bg-slate-100 mt-1">
+        {#if c.parts}
+          <div class="flex items-center gap-3">
             <div
-              class="h-2 rounded-full bg-violet-300"
-              style="width:{c.pct}%"
+              class="w-20 h-20 rounded-full shadow-sm"
+              style="background: {pieGradient(c.parts, c.colors)}"
+              aria-hidden="true"
             ></div>
+            <div class="flex-1">
+              <div class="text-sm font-medium text-slate-800">{c.label}</div>
+              <div class="mt-2 text-xs text-slate-600">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-2">
+                    <span
+                      class="inline-block w-3 h-3 rounded-full"
+                      style="background:{c.colors?.[0] ?? '#c7b3ff'}"
+                    ></span>
+                    <span>Rescue the sea turtle</span>
+                  </div>
+                  <div class="text-xs">{c.parts[0]}%</div>
+                </div>
+                <div class="flex items-center justify-between mt-1">
+                  <div class="flex items-center gap-2">
+                    <span
+                      class="inline-block w-3 h-3 rounded-full"
+                      style="background:{c.colors?.[1] ?? '#d6bbff'}"
+                    ></span>
+                    <span>Report the pollution</span>
+                  </div>
+                  <div class="text-xs">{c.parts[1]}%</div>
+                </div>
+                <div class="flex items-center justify-between mt-1">
+                  <div class="flex items-center gap-2">
+                    <span
+                      class="inline-block w-3 h-3 rounded-full"
+                      style="background:{c.colors?.[2] ?? '#efe6ff'}"
+                    ></span>
+                    <span>Organise a clean-up</span>
+                  </div>
+                  <div class="text-xs">{c.parts[2]}%</div>
+                </div>
+              </div>
+            </div>
           </div>
-        </div>
+        {/if}
       {/each}
     </div>
   </div>
@@ -148,20 +242,42 @@
                   {mq.parts[0]}% · {mq.parts[1]}% · {mq.parts[2]}%
                 </div>
               </div>
-              <div class="h-3 w-full rounded-full bg-white overflow-hidden">
-                <div
-                  style="width:{mq.parts[0]}%"
-                  class="h-full bg-sky-300 float-left"
-                ></div>
-                <div
-                  style="width:{mq.parts[1]}%"
-                  class="h-full bg-amber-200 float-left"
-                ></div>
-                <div
-                  style="width:{mq.parts[2]}%"
-                  class="h-full bg-rose-200 float-left"
-                ></div>
-              </div>
+              {#if modalTitle && modalTitle.toLowerCase().includes("true")}
+                <div class="h-3 w-full rounded-full bg-white overflow-hidden">
+                  <div
+                    style="width:{mq
+                      .parts[0]}%; background: {themeColors?.primary ??
+                      '#60A5FA'}"
+                    class="h-full float-left"
+                  ></div>
+                  <div
+                    style="width:{(mq.parts[1] ?? 0) +
+                      (mq.parts[2] ?? 0)}%; background: {themeColors?.pink ??
+                      '#FCA5A5'}"
+                    class="h-full float-left"
+                  ></div>
+                </div>
+              {:else}
+                <div class="h-3 w-full rounded-full bg-white overflow-hidden">
+                  <div
+                    style="width:{mq
+                      .parts[0]}%; background: {themeColors?.primary ??
+                      '#60A5FA'}"
+                    class="h-full float-left"
+                  ></div>
+                  <div
+                    style="width:{mq
+                      .parts[1]}%; background: {themeColors?.accent ??
+                      '#FDBA74'}"
+                    class="h-full float-left"
+                  ></div>
+                  <div
+                    style="width:{mq
+                      .parts[2]}%; background: {themeColors?.pink ?? '#FCA5A5'}"
+                    class="h-full float-left"
+                  ></div>
+                </div>
+              {/if}
             </div>
           {/each}
         </div>

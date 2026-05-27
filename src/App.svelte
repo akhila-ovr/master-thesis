@@ -71,10 +71,27 @@
     }
   }
 
+  // Theme: kid-friendly modern palette (soft, distinct)
+  export const themeColors = {
+    primary: "#60A5FA", // soft blue
+    secondary: "#A78BFA", // soft purple
+    accent: "#FDBA74", // soft orange
+    mint: "#86EFAC", // soft mint
+    pink: "#FCA5A5", // soft pink
+    // default trio for pie slices
+    pastelPalette: ["#60A5FA", "#FDBA74", "#86EFAC"],
+  };
+
+  // Shared pastel palette used across all creative pie charts (from theme)
+  const creativePalette = themeColors.pastelPalette;
+
+  // Four creative path questions; each has three path-option percentages
+  // All use the same soft pastel palette for consistency
   export const creative = [
-    { label: "Rescue the sea turtle", pct: 45 },
-    { label: "Report the pollution", pct: 32 },
-    { label: "Organise a clean-up", pct: 23 },
+    { label: "Path Q1", parts: [45, 32, 23], colors: creativePalette },
+    { label: "Path Q2", parts: [30, 40, 30], colors: creativePalette },
+    { label: "Path Q3", parts: [25, 50, 25], colors: creativePalette },
+    { label: "Path Q4", parts: [60, 20, 20], colors: creativePalette },
   ];
 
   export const reflectionSummary =
@@ -181,7 +198,7 @@
 
 <main
   class="min-h-screen bg-[#f6f3ee] text-slate-800 p-6"
-  style="font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;"
+  style="font-family: 'Poppins', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;"
 >
   <div class="mx-auto max-w-6xl">
     <header class="mb-4 flex items-center justify-between">
@@ -207,6 +224,7 @@
         <QuestionBreakdown
           {questionTypes}
           {creative}
+          {themeColors}
           debate={{
             title:
               'Debate: "Humans should stop all development near wildlife habitats"',

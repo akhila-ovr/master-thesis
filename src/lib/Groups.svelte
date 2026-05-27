@@ -45,7 +45,7 @@
 </script>
 
 <div class="rounded-lg border border-slate-200 bg-white p-4">
-  <h2 class="text-sm font-semibold">Student groups — quant + reflection</h2>
+  <h2 class="text-sm font-semibold">Student groups</h2>
   <div class="mt-3 space-y-3">
     {#each groups as g}
       <div
