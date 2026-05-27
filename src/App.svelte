@@ -5,6 +5,8 @@
   import ReflectionSummary from "./lib/ReflectionSummary.svelte";
   import QuestionBreakdown from "./lib/QuestionBreakdown.svelte";
   import StudentGroups from "./lib/Groups.svelte";
+  import TaskSuggestions from "./lib/TaskSuggestions.svelte";
+  import TasksList from "./lib/TasksList.svelte";
 
   // Shared data
   export const stats = [
@@ -194,6 +196,80 @@
         "Mixed performance — Some correct answers but shallow reflections. Recommend targeted prompts.",
     },
   ];
+
+  // Tasks & suggestions state
+  let tasks: Array<any> = [];
+  let tasksOpen = false;
+
+  $: pendingTasks = tasks.filter((t) => !t.done);
+
+  let suggestions: Array<any> = [
+    {
+      title: "Re-teach the ingestion pathway",
+      summary:
+        "Group A (5 students) scored below 55% and reflections miss the ingestion mechanism. Suggest re-teach before next expedition.",
+      task: {
+        title: "Re-teach ingestion pathway",
+        priority: "high",
+        note: "Use Finn D.'s reflection as example",
+      },
+      groundTruth: {
+        score: "Group A avg: 48% (5/10)",
+        transcript: "Finn D.: 'I saw a turtle with plastic in its stomach...'",
+      },
+    },
+    {
+      title: "Prompt self-evaluation",
+      summary:
+        "Group B students submitted surface reflections despite high scores — prompt metacognitive self-evaluation.",
+      task: {
+        title: "Prompt self-evaluation",
+        priority: "normal",
+        note: "Add 'I know this because...' prompt",
+      },
+      groundTruth: {
+        score: "Group B avg: 82% (8/10)",
+        transcript: "Noah R.: 'Plastic is bad for animals.' (surface-level)",
+      },
+    },
+  ];
+
+  function addSuggestionToTasks(s: any) {
+    // add suggestion task silently (do not open modal)
+    const merged = {
+      ...s.task,
+      reason: s.summary,
+      groundTruth: s.groundTruth,
+    };
+    tasks = [merged, ...tasks];
+    // remove suggestion
+    suggestions = suggestions.filter((x) => x !== s);
+  }
+
+  function rejectSuggestion(i: number) {
+    suggestions.splice(i, 1);
+    suggestions = suggestions.slice();
+  }
+
+  function addTaskManually(t: any) {
+    tasks = [{ ...t, done: false }, ...tasks];
+  }
+
+  function removeTask(i: number) {
+    tasks.splice(i, 1);
+    tasks = tasks.slice();
+  }
+
+  function openTasks() {
+    tasksOpen = true;
+  }
+
+  function markTaskDone(i: number) {
+    const t = tasks[i];
+    if (!t) return;
+    tasks[i] = { ...t, done: true };
+    tasks = tasks.slice();
+  }
 </script>
 
 <main
@@ -211,6 +287,10 @@
       </div>
       <div class="text-sm text-slate-600 flex items-center gap-3">
         <span>Completed yesterday · {students.length} students</span>
+        <button
+          class="text-xs px-3 py-1 bg-slate-100 rounded"
+          on:click={openTasks}>Add a Task</button
+        >
         <span class="rounded-full bg-rose-100 px-3 py-1 text-rose-700 text-xs"
           >Planning mode</span
         >
@@ -218,6 +298,52 @@
     </header>
 
     <MainStats {stats} />
+
+    <!-- Pending tasks preview (only show when there are pending tasks) -->
+    {#if pendingTasks.length > 0}
+      <div class="mt-4">
+        <div class="rounded-lg border border-slate-200 bg-white p-4">
+          <h3 class="text-sm font-semibold text-slate-900 mb-3">Tasks to do</h3>
+          <div class="space-y-2">
+            {#each pendingTasks as t}
+              <div
+                class="flex items-center justify-between gap-2 rounded border p-2"
+              >
+                <div>
+                  <div class="text-sm font-medium">{t.title}</div>
+                  {#if t.note}
+                    <div class="text-xs text-slate-600">{t.note}</div>
+                  {/if}
+                </div>
+                <div class="flex items-center gap-2">
+                  <div class="text-xs text-slate-500">{t.priority}</div>
+                  <button
+                    class="text-xs px-2 py-1 bg-green-100 text-green-700 rounded"
+                    on:click={() =>
+                      markTaskDone(tasks.findIndex((x) => x === t))}
+                    >Done</button
+                  >
+                  <button
+                    class="text-xs px-2 py-1 bg-red-100 text-red-700 rounded"
+                    on:click={() => removeTask(tasks.findIndex((x) => x === t))}
+                    >Remove</button
+                  >
+                </div>
+              </div>
+            {/each}
+          </div>
+        </div>
+      </div>
+    {/if}
+
+    <!-- Suggested teacher actions -->
+    <div class="mt-4 mb-6">
+      <TaskSuggestions
+        {suggestions}
+        onAdd={addSuggestionToTasks}
+        onReject={rejectSuggestion}
+      />
+    </div>
 
     <section class="grid gap-4 lg:grid-cols-2">
       <div class="space-y-4">
@@ -264,4 +390,12 @@
       </div>
     </section>
   </div>
+  <TasksList
+    {tasks}
+    open={tasksOpen}
+    onClose={() => (tasksOpen = false)}
+    onAdd={addTaskManually}
+    onRemove={removeTask}
+    on:done={(e) => markTaskDone(e.detail)}
+  />
 </main>
