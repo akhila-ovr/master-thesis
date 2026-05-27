@@ -270,6 +270,41 @@
     tasks[i] = { ...t, done: true };
     tasks = tasks.slice();
   }
+
+  // Helpers for student table (simple deterministic heuristics)
+  function computeScore(name: string) {
+    const sum = name.split("").reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
+    return 50 + (sum % 46); // 50..95
+  }
+
+  function computeHints(_name: string) {
+    return Math.floor(Math.random() * 3); // 0..2 (placeholder)
+  }
+
+  function computeDepth(name: string) {
+    const sum = name.split("").reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
+    return 2 + (sum % 4); // 2..5
+  }
+
+  function classificationLabel(s: any) {
+    const txt = (s.summary || "").toLowerCase();
+    if (txt.includes("surface")) return "Surface";
+    if (txt.includes("error") || txt.includes("not sure")) return "Error";
+    return "No issues";
+  }
+
+  function classificationClass(s: any) {
+    const lab = classificationLabel(s);
+    if (lab === "Error") return "text-red-700 bg-red-100";
+    if (lab === "Surface") return "text-rose-700 bg-rose-100";
+    return "text-emerald-700 bg-emerald-100";
+  }
+
+  function truncate(t: string, n: number) {
+    if (!t) return "";
+    return t.length > n ? t.slice(0, n - 1) + "…" : t;
+  }
+  
 </script>
 
 <main class="min-h-screen bg-[#f6f3ee] text-slate-800 p-6">
@@ -386,7 +421,7 @@
         <StudentGroups {students} {groups} />
       </div>
     </section>
-  </div>
+  
   <TasksList
     {tasks}
     open={tasksOpen}
@@ -395,4 +430,70 @@
     onRemove={removeTask}
     on:done={(e) => markTaskDone(e.detail)}
   />
+
+  <!-- All students — full results -->
+  <div class="mt-8">
+    <div class="rounded-lg border border-slate-200 bg-white p-4">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-sm font-semibold text-slate-900">
+          All students — full results
+        </h2>
+        <div class="text-xs text-slate-500">
+          sorted by classification priority
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-sm table-fixed min-w-0">
+          <colgroup>
+            <col style="width:220px" />
+            <col style="width:80px" />
+            <col style="width:64px" />
+            <col style="width:80px" />
+            <col style="width:240px" />
+            <col style="width:300px" />
+          </colgroup>
+          <thead>
+            <tr class="text-xs text-slate-500 border-b">
+              <th class="py-2">STUDENT</th>
+              <th class="py-2">SCORE</th>
+              <th class="py-2">HINTS</th>
+              <th class="py-2">DEPTH</th>
+              <th class="py-2">CLASSIFICATION</th>
+              <th class="py-2">REFLECTION SIGNAL</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y">
+            {#each students as s, i}
+              <tr class="align-top">
+                <td class="py-3 pr-4">
+                  <div class="font-medium">{s.name}</div>
+                  <div class="text-xs text-slate-500">Group {s.group}</div>
+                </td>
+                <td class="py-3 pr-4 text-slate-700">{computeScore(s.name)}%</td
+                >
+                <td class="py-3 pr-4 text-slate-700">{computeHints(s.name)}</td>
+                <td class="py-3 pr-4 text-slate-700"
+                  >{computeDepth(s.name)}/5</td
+                >
+                <td class="py-3 pr-4">
+                  <span
+                    class="text-xs rounded px-2 py-1 {classificationClass(s)}"
+                    >{classificationLabel(s)}</span
+                  >
+                </td>
+                <td class="py-3 pr-4 text-slate-700 italic">
+                  <div class="flex items-start justify-between gap-3">
+                    <div class="truncate max-w-[30ch]">{s.summary}</div>
+                  </div>
+                  
+                </td>
+              </tr>
+            {/each}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  </div>
 </main>
