@@ -123,33 +123,38 @@
     {/each}
   </div>
 
-  <div class="mt-4 rounded border border-slate-100 p-3 bg-white">
-    <div class="flex items-center justify-between text-xs text-slate-500 mb-2">
-      <div>{debate?.title ?? ""}</div>
-      <button
-        on:click={openDebateModal}
-        class="text-xs text-slate-600 hover:text-slate-900 hover:underline hover:underline-offset-2"
+  <div class="mt-6">
+    <h3 class="text-sm font-semibold text-slate-900 mb-3">Debate</h3>
+    <div class="rounded border border-slate-100 p-3 bg-white">
+      <div
+        class="flex items-center justify-between text-xs text-slate-500 mb-2"
       >
-        Show details
-      </button>
-    </div>
+        <div>{debate?.title ?? ""}</div>
+        <button
+          on:click={openDebateModal}
+          class="text-xs text-slate-600 hover:text-slate-900 hover:underline hover:underline-offset-2"
+        >
+          Show details
+        </button>
+      </div>
 
-    <div class="h-3 w-full rounded-full bg-slate-100 overflow-hidden">
-      <div
-        class="h-full float-left"
-        style="width:{debate?.left?.pct ??
-          0}%; background: {themeColors.primary ?? '#60A5FA'}"
-      ></div>
-      <div
-        class="h-full float-left"
-        style="width:{debate?.right?.pct ??
-          0}%; background: {themeColors.mint ?? '#86EFAC'}"
-      ></div>
-    </div>
+      <div class="h-3 w-full rounded-full bg-slate-100 overflow-hidden">
+        <div
+          class="h-full float-left"
+          style="width:{debate?.left?.pct ??
+            0}%; background: {themeColors.primary ?? '#60A5FA'}"
+        ></div>
+        <div
+          class="h-full float-left"
+          style="width:{debate?.right?.pct ??
+            0}%; background: {themeColors.mint ?? '#86EFAC'}"
+        ></div>
+      </div>
 
-    <div class="mt-2 flex justify-between text-xs text-slate-500">
-      <div>{debate?.left?.name ?? ""} {debate?.left?.pct ?? 0}%</div>
-      <div>{debate?.right?.name ?? ""} {debate?.right?.pct ?? 0}%</div>
+      <div class="mt-2 flex justify-between text-xs text-slate-500">
+        <div>{debate?.left?.name ?? ""} {debate?.left?.pct ?? 0}%</div>
+        <div>{debate?.right?.name ?? ""} {debate?.right?.pct ?? 0}%</div>
+      </div>
     </div>
   </div>
 

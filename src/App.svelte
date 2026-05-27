@@ -227,7 +227,7 @@
           {themeColors}
           debate={{
             title:
-              'Debate: "Humans should stop all development near wildlife habitats"',
+              'Topic: "Humans should stop all development near wildlife habitats"',
             left: {
               name: "Vio",
               pct: 58,
