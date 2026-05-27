@@ -15,13 +15,76 @@
     {
       label: "True / False (3 questions)",
       parts: [55, 25, 20],
-      note: 'Q3 worst: "animals can adapt to habitat loss" — 31% correct first try',
+      questions: [
+        { parts: [62, 20, 18] },
+        { parts: [57, 25, 18] },
+        { parts: [31, 34, 35] },
+      ],
     },
-    { label: "Multiple choice (4 questions)", parts: [70, 20, 10] },
-    { label: "Fill in blanks (2 questions)", parts: [58, 28, 14] },
-    { label: "Drag & drop (2 questions)", parts: [72, 20, 8] },
-    { label: "Sorting (1 question)", parts: [66, 24, 10] },
+    {
+      label: "Multiple choice (4 questions)",
+      parts: [70, 20, 10],
+      questions: [
+        { parts: [78, 15, 7] },
+        { parts: [65, 20, 15] },
+        { parts: [70, 18, 12] },
+        { parts: [67, 27, 6] },
+      ],
+    },
+    {
+      label: "Fill in blanks (2 questions)",
+      parts: [58, 28, 14],
+      questions: [{ parts: [60, 25, 15] }, { parts: [56, 31, 13] }],
+    },
+    {
+      label: "Drag & drop (2 questions)",
+      parts: [72, 20, 8],
+      questions: [{ parts: [74, 18, 8] }, { parts: [70, 22, 8] }],
+    },
+    {
+      label: "Sorting (1 question)",
+      parts: [66, 24, 10],
+      questions: [{ parts: [66, 24, 10] }],
+    },
   ];
+
+  // assign a random mapping of question numbers 1..12 to the per-type questions
+  function shuffle<T>(arr: T[]) {
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      const tmp = arr[i];
+      arr[i] = arr[j];
+      arr[j] = tmp;
+    }
+    return arr;
+  }
+
+  const qNums = shuffle(Array.from({ length: 12 }, (_, i) => i + 1));
+  // mutate questionTypes to assign labels Qn from shuffled numbers
+  for (const qt of questionTypes) {
+    for (const qq of qt.questions) {
+      const n = qNums.shift();
+      qq.label = `Q${n}`;
+    }
+  }
+
+  // question modal state
+  let qModalOpen = false;
+  let qModalTitle = "";
+  let qModalQuestions = [] as Array<{ label: string; parts: number[] }>;
+  function openQuestionModal(idx: number) {
+    qModalTitle = questionTypes[idx].label;
+    qModalQuestions = questionTypes[idx].questions.map((x) => ({
+      label: x.label,
+      parts: x.parts,
+    }));
+    qModalOpen = true;
+  }
+  function closeQuestionModal() {
+    qModalOpen = false;
+    qModalQuestions = [];
+    qModalTitle = "";
+  }
 
   const debate = {
     title:
@@ -177,12 +240,16 @@
             Question type breakdown
           </h2>
           <div class="mt-4 space-y-4">
-            {#each questionTypes as q}
+            {#each questionTypes as q, idx}
               <div>
                 <div
                   class="flex items-center justify-between text-xs text-slate-500 mb-2"
                 >
                   <div>{q.label}</div>
+                  <button
+                    on:click={() => openQuestionModal(idx)}
+                    class="text-xs text-slate-600">Show details</button
+                  >
                 </div>
                 <div
                   class="h-3 w-full rounded-full bg-slate-100 overflow-hidden"
@@ -200,9 +267,6 @@
                     class="h-full bg-rose-200 float-left"
                   ></div>
                 </div>
-                {#if q.note}
-                  <div class="mt-2 text-xs text-slate-500">{q.note}</div>
-                {/if}
               </div>
             {/each}
           </div>
@@ -478,6 +542,55 @@
               </div>
             {/if}
           </div>
+        </div>
+      </div>
+    </div>
+  {/if}
+  {#if qModalOpen}
+    <div class="fixed inset-0 z-60 flex items-center justify-center">
+      <div
+        class="absolute inset-0 bg-black/40"
+        on:click={closeQuestionModal}
+      ></div>
+      <div
+        class="relative z-70 w-[90%] max-w-2xl bg-white rounded-lg shadow-lg overflow-auto max-h-[80vh]"
+      >
+        <div
+          class="p-4 border-b border-slate-100 flex items-center justify-between"
+        >
+          <div class="text-sm font-semibold">{qModalTitle}</div>
+          <button
+            on:click={closeQuestionModal}
+            class="text-xs px-2 py-1 bg-slate-100 rounded">Close</button
+          >
+        </div>
+        <div class="p-4 space-y-3">
+          {#each qModalQuestions as qq}
+            <div class="rounded border border-slate-100 bg-slate-50 p-3">
+              <div
+                class="flex items-center justify-between text-xs text-slate-700 mb-2"
+              >
+                <div>{qq.label}</div>
+                <div class="text-xs text-slate-600">
+                  {qq.parts[0]}% · {qq.parts[1]}% · {qq.parts[2]}%
+                </div>
+              </div>
+              <div class="h-3 w-full rounded-full bg-white overflow-hidden">
+                <div
+                  style="width:{qq.parts[0]}%"
+                  class="h-full bg-sky-300 float-left"
+                ></div>
+                <div
+                  style="width:{qq.parts[1]}%"
+                  class="h-full bg-amber-200 float-left"
+                ></div>
+                <div
+                  style="width:{qq.parts[2]}%"
+                  class="h-full bg-rose-200 float-left"
+                ></div>
+              </div>
+            </div>
+          {/each}
         </div>
       </div>
     </div>
