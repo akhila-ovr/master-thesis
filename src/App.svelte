@@ -272,10 +272,7 @@
   }
 </script>
 
-<main
-  class="min-h-screen bg-[#f6f3ee] text-slate-800 p-6"
-  style="font-family: 'Poppins', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;"
->
+<main class="min-h-screen bg-[#f6f3ee] text-slate-800 p-6">
   <div class="mx-auto max-w-6xl">
     <header class="mb-4 flex items-center justify-between">
       <div>
