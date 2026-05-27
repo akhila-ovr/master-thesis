@@ -8,6 +8,7 @@
   let modalOpen = false;
   let modalTitle = "";
   let modalQuestions: Array<{ label: string; parts: number[] }> = [];
+  let debateModalOpen = false;
 
   function openModal(i: number) {
     modalTitle = questionTypes[i]?.label ?? "";
@@ -20,6 +21,14 @@
   function closeModal() {
     modalOpen = false;
     modalQuestions = [];
+  }
+
+  function openDebateModal() {
+    debateModalOpen = true;
+  }
+
+  function closeDebateModal() {
+    debateModalOpen = false;
   }
 </script>
 
@@ -55,26 +64,30 @@
   </div>
 
   <div class="mt-4 rounded border border-slate-100 p-3 bg-white">
-    <div class="text-sm text-slate-700 mb-2">{debate?.title ?? ""}</div>
-    <div class="flex items-center gap-3">
-      <div class="flex-1 rounded-full bg-slate-100 p-1">
-        <div
-          class="h-6 rounded-full bg-sky-300 inline-block"
-          style="width:{debate?.left?.pct ?? 0}%"
-        ></div>
-        <div
-          class="h-6 rounded-full bg-emerald-300 inline-block float-right"
-          style="width:{debate?.right?.pct ?? 0}%"
-        ></div>
-      </div>
+    <div class="flex items-center justify-between text-xs text-slate-500 mb-2">
+      <div>{debate?.title ?? ""}</div>
+      <button
+        on:click={openDebateModal}
+        class="text-xs text-slate-600 hover:text-slate-900 hover:underline hover:underline-offset-2"
+      >
+        Show details
+      </button>
     </div>
+
+    <div class="h-3 w-full rounded-full bg-slate-100 overflow-hidden">
+      <div
+        class="h-full float-left bg-sky-300"
+        style="width:{debate?.left?.pct ?? 0}%"
+      ></div>
+      <div
+        class="h-full float-left bg-emerald-300"
+        style="width:{debate?.right?.pct ?? 0}%"
+      ></div>
+    </div>
+
     <div class="mt-2 flex justify-between text-xs text-slate-500">
-      <div class="px-2 py-1 rounded text-sky-700 bg-sky-100/60">
-        {debate?.left?.name ?? ""}{debate?.left?.pct ?? 0}%
-      </div>
-      <div class="px-2 py-1 rounded text-emerald-700 bg-emerald-100/60">
-        {debate?.right?.name ?? ""}{debate?.right?.pct ?? 0}%
-      </div>
+      <div>{debate?.left?.name ?? ""} {debate?.left?.pct ?? 0}%</div>
+      <div>{debate?.right?.name ?? ""} {debate?.right?.pct ?? 0}%</div>
     </div>
   </div>
 
@@ -151,6 +164,89 @@
               </div>
             </div>
           {/each}
+        </div>
+      </div>
+    </div>
+  {/if}
+
+  {#if debateModalOpen}
+    <div class="fixed inset-0 z-50 flex items-center justify-center">
+      <div
+        class="absolute inset-0 bg-black/40"
+        role="button"
+        tabindex="0"
+        aria-label="Close debate modal"
+        on:click={closeDebateModal}
+        on:keydown={(e) => {
+          if (e.key === "Enter" || e.key === " ") closeDebateModal();
+        }}
+      ></div>
+      <div
+        class="relative z-10 w-[90%] max-w-xl bg-white rounded-lg shadow-lg overflow-hidden"
+      >
+        <div
+          class="p-4 border-b border-slate-100 flex items-center justify-between"
+        >
+          <div>
+            <div class="text-xs uppercase tracking-[0.18em] text-slate-400">
+              Debate stance
+            </div>
+            <div class="text-sm font-semibold text-slate-900">
+              Vio / Mint comparison
+            </div>
+          </div>
+          <button
+            on:click={closeDebateModal}
+            class="text-xs px-2 py-1 bg-slate-100 rounded"
+          >
+            Close
+          </button>
+        </div>
+
+        <div class="p-4 space-y-4">
+          <div class="grid gap-3 md:grid-cols-2">
+            <div class="rounded border border-slate-100 bg-slate-50 p-3">
+              <div
+                class="text-xs font-medium uppercase tracking-[0.18em] text-slate-400 mb-2"
+              >
+                Vio stance
+              </div>
+              <div class="text-sm leading-6 text-slate-700">
+                {debate?.left?.stance}
+              </div>
+              <div class="mt-3 text-xs text-slate-500 mb-2">Students</div>
+              <div class="flex flex-wrap gap-2">
+                {#each debate?.left?.students ?? [] as student}
+                  <div
+                    class="rounded border border-slate-200 bg-white px-3 py-1 text-xs text-slate-700 shadow-sm"
+                  >
+                    {student}
+                  </div>
+                {/each}
+              </div>
+            </div>
+
+            <div class="rounded border border-slate-100 bg-slate-50 p-3">
+              <div
+                class="text-xs font-medium uppercase tracking-[0.18em] text-slate-400 mb-2"
+              >
+                Mint stance
+              </div>
+              <div class="text-sm leading-6 text-slate-700">
+                {debate?.right?.stance}
+              </div>
+              <div class="mt-3 text-xs text-slate-500 mb-2">Students</div>
+              <div class="flex flex-wrap gap-2">
+                {#each debate?.right?.students ?? [] as student}
+                  <div
+                    class="rounded border border-slate-200 bg-white px-3 py-1 text-xs text-slate-700 shadow-sm"
+                  >
+                    {student}
+                  </div>
+                {/each}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

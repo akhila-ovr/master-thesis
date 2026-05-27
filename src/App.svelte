@@ -8,7 +8,7 @@
 
   // Shared data
   export const stats = [
-    { label: "Completed", value: "19/22" },
+    { label: "Completed", value: "8/10" },
     { label: "Avg. score", value: "64%", note: "below target", accent: true },
     { label: "Errors confirmed", value: "7", note: "by reflection" },
     {
@@ -210,8 +210,32 @@
           debate={{
             title:
               'Debate: "Humans should stop all development near wildlife habitats"',
-            left: { name: "Vio", pct: 58 },
-            right: { name: "Mint", pct: 42 },
+            left: {
+              name: "Vio",
+              pct: 58,
+              stance:
+                "Protect habitat first: slow development, avoid fragmentation, and keep wildlife corridors open.",
+              students: [
+                "Finn D.",
+                "Amara K.",
+                "Priya N.",
+                "Luca B.",
+                "Sofia M.",
+              ],
+            },
+            right: {
+              name: "Mint",
+              pct: 42,
+              stance:
+                "Development can continue if it is carefully managed with mitigation and planning.",
+              students: [
+                "Omar S.",
+                "Noah R.",
+                "James T.",
+                "Yara H.",
+                "Lina P.",
+              ],
+            },
           }}
         />
       </div>
