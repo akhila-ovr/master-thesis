@@ -37,18 +37,80 @@
   ];
 
   const reflectionSummary =
-    'Most students identify littering and plastic as harmful but 11 of 16 reflections describe effects without explaining the mechanism — they say plastic is "bad for animals" without saying why. The missing link is the ingestion pathway.';
+    "Most students identify littering and plastic as harmful; several reflections describe effects without explaining the mechanism (missing ingestion pathway).";
 
-  const reflections = [
-    "Mentions ingestion pathway but no mechanism",
-    "Notes littering harms habitats",
-    "Strong personal connection",
-    "Surface-level comment",
+  const students = [
+    {
+      name: "Finn D.",
+      summary: "Strong; explains ingestion pathway",
+      transcript: "I saw a turtle with plastic in its stomach...",
+    },
+    {
+      name: "Omar S.",
+      summary: "Mentions habitat loss",
+      transcript: "Animals lose their homes when we build here...",
+    },
+    {
+      name: "Noah R.",
+      summary: "Surface-level",
+      transcript: "Plastic is bad for animals.",
+    },
+    {
+      name: "Amara K.",
+      summary: "Connects to community",
+      transcript: "We can organize a clean-up...",
+    },
+    {
+      name: "James T.",
+      summary: "Good detail on ingestion",
+      transcript: "Ingestion causes blockages and toxins...",
+    },
+    {
+      name: "Luca B.",
+      summary: "Short, correct",
+      transcript: "They eat plastic by mistake.",
+    },
+    {
+      name: "Priya N.",
+      summary: "Reflective",
+      transcript: "I worry about long-term effects...",
+    },
+    {
+      name: "Yara H.",
+      summary: "Surface",
+      transcript: "Plastic is bad for sea life.",
+    },
+    {
+      name: "Sofia M.",
+      summary: "Mechanism noted",
+      transcript: "Microplastics enter the food chain...",
+    },
+    {
+      name: "Lina P.",
+      summary: "Personal connection",
+      transcript: "My local beach had plastic everywhere...",
+    },
   ];
 
-  let showAll = false;
-  function toggleAll() {
-    showAll = !showAll;
+  let modalOpen = false;
+  let selectedIndex: number | null = null;
+  let showTranscript = false;
+  function openModal() {
+    modalOpen = true;
+    selectedIndex = null;
+    showTranscript = false;
+  }
+  function closeModal() {
+    modalOpen = false;
+    selectedIndex = null;
+    showTranscript = false;
+  }
+  function selectStudent(i: number) {
+    selectedIndex = i;
+    showTranscript = false;
+  }
+  function toggleTranscript() {
+    showTranscript = !showTranscript;
   }
 </script>
 
@@ -66,7 +128,7 @@
         </h1>
       </div>
       <div class="text-sm text-slate-600 flex items-center gap-3">
-        <span>Completed yesterday · 22 students</span>
+        <span>Completed yesterday · 10 students</span>
         <span class="rounded-full bg-rose-100 px-3 py-1 text-rose-700 text-xs"
           >Planning mode</span
         >
@@ -196,24 +258,15 @@
           </div>
           <div class="mt-3 flex gap-2">
             <button
-              on:click={toggleAll}
+              on:click={openModal}
               class="rounded-full border border-slate-200 px-3 py-1 text-xs text-slate-700 bg-white"
-              >{showAll
-                ? "Hide"
-                : `See all ${reflections.length} reflections`}</button
+              >See all {students.length} reflections</button
             >
             <button
               class="rounded-full border border-slate-200 px-3 py-1 text-xs text-slate-700 bg-white"
               >Override summary</button
             >
           </div>
-          {#if showAll}
-            <ul class="mt-3 text-sm text-slate-300 space-y-1">
-              {#each reflections as r}
-                <li>• {r}</li>
-              {/each}
-            </ul>
-          {/if}
         </div>
 
         <div class="rounded-lg border border-slate-200 bg-white p-4">
@@ -234,7 +287,7 @@
                     re-teaching.
                   </div>
                 </div>
-                <div class="text-sm text-slate-600">5 students</div>
+                <div class="text-sm text-slate-600">2 students</div>
               </div>
             </div>
 
@@ -268,7 +321,7 @@
                     show specific mechanisms and personal connections.
                   </div>
                 </div>
-                <div class="text-sm text-slate-600">4 students</div>
+                <div class="text-sm text-slate-600">3 students</div>
               </div>
             </div>
 
@@ -285,7 +338,7 @@
                     reflections. Recommend targeted prompts.
                   </div>
                 </div>
-                <div class="text-sm text-slate-600">6 students</div>
+                <div class="text-sm text-slate-600">2 students</div>
               </div>
             </div>
           </div>
@@ -293,4 +346,81 @@
       </div>
     </section>
   </div>
+  {#if modalOpen}
+    <div class="fixed inset-0 z-50 flex items-center justify-center">
+      <div class="absolute inset-0 bg-black/40" on:click={closeModal}></div>
+      <div
+        class="relative z-10 w-[90%] max-w-4xl bg-white rounded-lg shadow-lg overflow-hidden"
+      >
+        <div class="flex">
+          <div
+            class="w-1/3 border-r border-slate-100 max-h-[70vh] overflow-auto"
+          >
+            <div class="p-4 text-sm font-semibold">
+              Reflections ({students.length})
+            </div>
+            {#each students as st, i}
+              <button
+                on:click={() => selectStudent(i)}
+                class="w-full text-left p-3 hover:bg-slate-50 border-t border-slate-100"
+              >
+                <div class="text-sm text-slate-800">{st.name}</div>
+                <div class="text-xs text-slate-500 mt-1">{st.summary}</div>
+              </button>
+            {/each}
+          </div>
+
+          <div class="w-2/3 p-4">
+            <div class="flex items-start justify-between">
+              <div>
+                {#if selectedIndex !== null}
+                  <div class="text-base font-semibold">
+                    {students[selectedIndex].name}
+                  </div>
+                  <div class="text-sm text-slate-600 mt-1">
+                    {students[selectedIndex].summary}
+                  </div>
+                {:else}
+                  <div class="text-base font-semibold">Select a student</div>
+                  <div class="text-sm text-slate-600 mt-1">
+                    Choose a student to view full reflection.
+                  </div>
+                {/if}
+              </div>
+              <div>
+                <button
+                  on:click={closeModal}
+                  class="text-xs px-2 py-1 bg-slate-100 rounded">Close</button
+                >
+              </div>
+            </div>
+
+            {#if selectedIndex !== null}
+              <div class="mt-4">
+                <div class="text-sm text-slate-700">Summary</div>
+                <div class="mt-2 text-sm text-slate-800">
+                  {students[selectedIndex].summary}
+                </div>
+                <div class="mt-4">
+                  <button
+                    on:click={toggleTranscript}
+                    class="rounded-full border border-slate-200 px-3 py-1 text-xs"
+                    >{showTranscript
+                      ? "Hide transcript"
+                      : "Show transcript"}</button
+                  >
+                </div>
+                {#if showTranscript}
+                  <pre
+                    class="mt-3 p-3 bg-slate-50 text-sm text-slate-700 rounded max-h-48 overflow-auto">{students[
+                      selectedIndex
+                    ].transcript}</pre>
+                {/if}
+              </div>
+            {/if}
+          </div>
+        </div>
+      </div>
+    </div>
+  {/if}
 </main>
