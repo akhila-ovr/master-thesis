@@ -1,4 +1,4 @@
-<!-- TaskSuggestions.svelte: shows suggested teacher actions with Add/Reject buttons -->
+<!-- TaskSuggestions.svelte: shows suggested teacher actions with accept/reject buttons -->
 <script lang="ts">
   export let suggestions: Array<any> = [];
   export let onAdd: (task: any) => void;
@@ -23,27 +23,16 @@
                 class="text-xs px-3 py-1 bg-blue-500 text-white rounded"
                 on:click={() => onAdd && onAdd(s)}
               >
-                Add to tasks list
+                Accept suggestion
               </button>
               <button
                 class="text-xs px-2 py-1 bg-transparent border border-slate-200 rounded text-slate-600"
                 on:click={() => onReject && onReject(i)}
               >
-                Reject
+                Reject suggestion
               </button>
             </div>
           </div>
-          {#if s.groundTruth}
-            <div class="text-xs text-slate-500">
-              <div><strong>Ground truth:</strong> {s.groundTruth.score}</div>
-              {#if s.groundTruth.transcript}
-                <div class="mt-1">
-                  <strong>Transcript:</strong>
-                  {s.groundTruth.transcript}
-                </div>
-              {/if}
-            </div>
-          {/if}
         </div>
       </div>
     {/each}

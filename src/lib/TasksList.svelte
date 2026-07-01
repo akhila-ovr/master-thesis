@@ -1,25 +1,36 @@
 <!-- TasksList.svelte: modal to view and manage teacher tasks; includes form to add new tasks -->
 <script lang="ts">
+  import { createEventDispatcher } from "svelte";
+
   export let tasks: Array<any> = [];
   export let open: boolean = false;
   export let onClose: () => void;
-  import { createEventDispatcher } from "svelte";
   export let onAdd: (task: any) => void;
   export let onRemove: (index: number) => void;
+
   const dispatch = createEventDispatcher();
 
   let title = "";
   let priority = "normal";
   let note = "";
+  let targetedIdea = "";
 
   function submit(e: Event) {
     e.preventDefault();
     if (!title.trim()) return;
-    const t = { title: title.trim(), priority, note };
+    // Manually added items are standard tasks, not suggestions
+    const t = { title: title.trim(), priority, note, targetedIdea, isSuggestion: false };
     onAdd && onAdd(t);
     title = "";
     priority = "normal";
     note = "";
+    targetedIdea = "";
+  }
+
+  function acceptSuggestion(index: number) {
+    tasks[index].isSuggestion = false;
+    // Trigger Svelte reactivity
+    tasks = [...tasks];
   }
 </script>
 
@@ -73,14 +84,20 @@
         </form>
 
         <div>
-          <div class="text-xs text-slate-600 mb-2">Existing tasks</div>
+          <div class="text-xs text-slate-600 mb-2">
+            Existing tasks & Suggestions
+          </div>
           <div class="space-y-2">
             {#each tasks as t, i}
-              <div class="rounded border p-2">
+              <div
+                class="rounded border p-2 {t.isSuggestion
+                  ? 'bg-blue-50 border-blue-200'
+                  : ''}"
+              >
                 <div class="flex items-start justify-between gap-2">
                   <div class="flex-1">
                     <div
-                      class="text-sm font-medium {t.done
+                      class="text-sm font-medium {t.done && !t.isSuggestion
                         ? 'line-through text-slate-400'
                         : ''}"
                     >
@@ -89,45 +106,51 @@
                     {#if t.note}
                       <div class="text-xs text-slate-600 mt-1">{t.note}</div>
                     {/if}
+                    {#if t.targetedIdea}
+                      <div class="text-xs text-slate-500 mt-2">
+                        <strong>Targeted idea:</strong>
+                        {t.targetedIdea}
+                      </div>
+                    {/if}
                     {#if t.reason}
                       <div class="text-xs text-slate-500 mt-2">
                         <strong>Why:</strong>
                         {t.reason}
                       </div>
                     {/if}
-                    {#if t.groundTruth}
-                      <div class="text-xs text-slate-500 mt-1">
-                        <div>
-                          <strong>Ground truth:</strong>
-                          {t.groundTruth.score}
-                        </div>
-                        {#if t.groundTruth.transcript}
-                          <div class="mt-1">
-                            <strong>Transcript:</strong>
-                            {t.groundTruth.transcript}
-                          </div>
-                        {/if}
-                      </div>
-                    {/if}
                   </div>
                   <div class="flex items-center gap-2">
                     <div class="text-xs text-slate-500">{t.priority}</div>
-                    {#if t.done}
-                      <div
-                        class="text-xs px-2 py-1 bg-green-100 text-green-700 rounded"
-                      >
-                        Done
-                      </div>
-                    {:else}
+
+                    {#if t.isSuggestion}
+                      <!-- Suggestion Actions -->
                       <button
-                        class="text-xs px-2 py-1 bg-green-100 text-green-700 rounded"
-                        on:click={() => dispatch("done", i)}>Mark done</button
+                        class="text-xs px-2 py-1 bg-blue-500 text-white rounded"
+                        on:click={() => acceptSuggestion(i)}>Accept</button
+                      >
+                      <button
+                        class="text-xs px-2 py-1 bg-slate-200 text-slate-700 rounded"
+                        on:click={() => onRemove && onRemove(i)}>Reject</button
+                      >
+                    {:else}
+                      <!-- Standard Task Actions -->
+                      {#if t.done}
+                        <div
+                          class="text-xs px-2 py-1 bg-green-100 text-green-700 rounded"
+                        >
+                          Done
+                        </div>
+                      {:else}
+                        <button
+                          class="text-xs px-2 py-1 bg-green-100 text-green-700 rounded"
+                          on:click={() => dispatch("done", i)}>Mark done</button
+                        >
+                      {/if}
+                      <button
+                        class="text-xs px-2 py-1 bg-red-100 text-red-700 rounded"
+                        on:click={() => onRemove && onRemove(i)}>Remove</button
                       >
                     {/if}
-                    <button
-                      class="text-xs px-2 py-1 bg-red-100 text-red-700 rounded"
-                      on:click={() => onRemove && onRemove(i)}>Remove</button
-                    >
                   </div>
                 </div>
               </div>

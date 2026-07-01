@@ -8,18 +8,32 @@
   import TaskSuggestions from "./lib/TaskSuggestions.svelte";
   import TasksList from "./lib/TasksList.svelte";
 
+  let rubricOpen = false;
+
+  function openRubric() {
+    rubricOpen = true;
+  }
+
+  function closeRubric() {
+    rubricOpen = false;
+  }
+
   // Shared data
   export const stats = [
-    { label: "Completed", value: "8/10" },
-    { label: "Avg. score", value: "64%", note: "below target", accent: true },
-    { label: "Errors confirmed", value: "7", note: "by reflection" },
     {
-      label: "Avg. ref depth",
-      value: "2.4/5",
-      note: "surface-level",
-      accent: true,
+      label: "Correct Answers - First Try",
+      value: "29%",
+      tone: "success",
     },
+    {
+      label: "Correct Answers - After Retry",
+      value: "47%",
+      tone: "warning",
+    },
+    { label: "Incorrect Answers", value: "24%", tone: "danger" },
   ];
+
+  const averageReflectionDepth = "2.4/5";
 
   export const questionTypes = [
     {
@@ -97,7 +111,7 @@
   ];
 
   export const reflectionSummary =
-    "Most students identify littering and plastic as harmful; several reflections describe effects without explaining the mechanism (missing ingestion pathway).";
+    "Most students identify littering and plastic as harmful; several reflections describe effects without explaining the mechanism.";
 
   export const students = [
     {
@@ -165,35 +179,35 @@
   export const groups = [
     {
       id: "A",
-      label: "Group A",
+      label: "Group A: Low score, error in reflection",
       chipTextClass: "text-rose-700",
       chipBgClass: "bg-rose-100",
       description:
-        "Low score + error in reflection — Scores below 55%. Need re-teaching.",
+        "This group scored below 55% and reflections show errors or misconceptions. Recommend re-teaching key concepts.",
     },
     {
       id: "B",
-      label: "Group B",
+      label: "Group B: High score, surface reflection",
       chipTextClass: "text-indigo-700",
       chipBgClass: "bg-indigo-100",
       description:
-        "High score, surface reflection — 80%+. Needs metacognitive prompting.",
+        "This group scored 80%+ but their reflections are surface-level. Recommend prompting for deeper thinking.",
     },
     {
       id: "C",
-      label: "Group C",
+      label: "Group C: High score, rich reflection",
       chipTextClass: "text-emerald-700",
       chipBgClass: "bg-emerald-100",
       description:
-        "Strong score + rich reflection — Scores 80%+. Reflections show specific mechanisms and personal connections.",
+        "This group scored well and provided rich reflections. No immediate action needed, but consider enrichment activities.",
     },
     {
       id: "D",
-      label: "Group D",
+      label: "Group D: Mixed performance",
       chipTextClass: "text-yellow-700",
       chipBgClass: "bg-yellow-100",
       description:
-        "Mixed performance — Some correct answers but shallow reflections. Recommend targeted prompts.",
+        "This group has mixed scores and reflections. Recommend reviewing individual student performance for targeted support.",
     },
   ];
 
@@ -207,42 +221,34 @@
     {
       title: "Re-teach the ingestion pathway",
       summary:
-        "Group A (5 students) scored below 55% and reflections miss the ingestion mechanism. Suggest re-teach before next expedition.",
+        "Group A (5 students) scored below 55% and reflections miss the ingestion mechanism. Consider re-teaching this concept.",
       task: {
-        title: "Re-teach ingestion pathway",
+        title: "Re-teach the ingestion pathway",
         priority: "high",
-        note: "Use Finn D.'s reflection as example",
-      },
-      groundTruth: {
-        score: "Group A avg: 48% (5/10)",
-        transcript: "Finn D.: 'I saw a turtle with plastic in its stomach...'",
+        note: "Consider using Finn D.'s reflection as example",
       },
     },
     {
       title: "Prompt self-evaluation",
       summary:
-        "Group B students submitted surface reflections despite high scores — prompt metacognitive self-evaluation.",
+        "Group B students submitted surface reflections despite high scores. Consider prompting metacognitive self-evaluation.",
       task: {
         title: "Prompt self-evaluation",
         priority: "normal",
         note: "Add 'I know this because...' prompt",
       },
-      groundTruth: {
-        score: "Group B avg: 82% (8/10)",
-        transcript: "Noah R.: 'Plastic is bad for animals.' (surface-level)",
-      },
     },
   ];
 
   function addSuggestionToTasks(s: any) {
-    // add suggestion task silently (do not open modal)
+    // accept suggestion and turn it into a checklist task
     const merged = {
       ...s.task,
       reason: s.summary,
-      groundTruth: s.groundTruth,
+      done: false,
     };
     tasks = [merged, ...tasks];
-    // remove suggestion
+    // remove suggestion from the recommendation list
     suggestions = suggestions.filter((x) => x !== s);
   }
 
@@ -304,11 +310,30 @@
     if (!t) return "";
     return t.length > n ? t.slice(0, n - 1) + "…" : t;
   }
-  
 </script>
 
 <main class="min-h-screen bg-[#f6f3ee] text-slate-800 p-6">
   <div class="mx-auto max-w-6xl">
+    <div
+      class="mb-4 rounded-lg border border-sky-100 bg-sky-100/70 px-4 py-3 text-sky-950 shadow-sm"
+    >
+      <div class="flex items-start gap-3">
+        <div
+          class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-sky-300 text-sky-600"
+        >
+          <span class="text-[11px] leading-none font-semibold">i</span>
+        </div>
+        <div>
+          <div class="text-sm font-semibold">
+            This expedition is still in progress
+          </div>
+          <div class="text-xs text-sky-950/80">
+            The data may change until every student completes the expedition.
+          </div>
+        </div>
+      </div>
+    </div>
+
     <header class="mb-4 flex items-center justify-between">
       <div>
         <h1 class="text-xl font-semibold">
@@ -318,14 +343,7 @@
         </h1>
       </div>
       <div class="text-sm text-slate-600 flex items-center gap-3">
-        <span>Completed yesterday · {students.length} students</span>
-        <button
-          class="text-xs px-3 py-1 bg-slate-100 rounded"
-          on:click={openTasks}>Add a Task</button
-        >
-        <span class="rounded-full bg-rose-100 px-3 py-1 text-rose-700 text-xs"
-          >Planning mode</span
-        >
+        <span>Completed yesterday · 8 / {students.length} students</span>
       </div>
     </header>
 
@@ -367,6 +385,35 @@
         </div>
       </div>
     {/if}
+
+    <div class="mt-4 grid gap-4 lg:grid-cols-[1fr_3fr]">
+      <div class="rounded-lg border border-slate-200 bg-white p-4">
+        <div
+          class="flex h-full flex-col items-center justify-center gap-2 text-center"
+        >
+          <div>
+            <div class="text-xs text-slate-500">Average reflection depth</div>
+            <div class="mt-1 text-2xl font-semibold text-emerald-500">
+              {averageReflectionDepth}
+            </div>
+          </div>
+          <button
+            type="button"
+            on:click={openRubric}
+            class="rounded-full border border-sky-200 bg-sky-50 px-3 py-1 text-xs font-medium text-sky-700"
+          >
+            See how score is assigned
+          </button>
+        </div>
+      </div>
+
+      <ReflectionSummary
+        {reflectionSummary}
+        {students}
+        {rubricOpen}
+        on:closeRubric={closeRubric}
+      />
+    </div>
 
     <!-- Suggested teacher actions -->
     <div class="mt-4 mb-6">
@@ -417,83 +464,17 @@
       </div>
 
       <div class="space-y-4">
-        <ReflectionSummary {reflectionSummary} {students} />
         <StudentGroups {students} {groups} />
       </div>
     </section>
-  
-  <TasksList
-    {tasks}
-    open={tasksOpen}
-    onClose={() => (tasksOpen = false)}
-    onAdd={addTaskManually}
-    onRemove={removeTask}
-    on:done={(e) => markTaskDone(e.detail)}
-  />
 
-  <!-- All students — full results -->
-  <div class="mt-8">
-    <div class="rounded-lg border border-slate-200 bg-white p-4">
-      <div class="flex items-center justify-between mb-4">
-        <h2 class="text-sm font-semibold text-slate-900">
-          All students — full results
-        </h2>
-        <div class="text-xs text-slate-500">
-          sorted by classification priority
-        </div>
-      </div>
-
-      <div class="overflow-x-auto">
-        <table class="w-full text-left text-sm table-fixed min-w-0">
-          <colgroup>
-            <col style="width:220px" />
-            <col style="width:80px" />
-            <col style="width:64px" />
-            <col style="width:80px" />
-            <col style="width:240px" />
-            <col style="width:300px" />
-          </colgroup>
-          <thead>
-            <tr class="text-xs text-slate-500 border-b">
-              <th class="py-2">STUDENT</th>
-              <th class="py-2">SCORE</th>
-              <th class="py-2">HINTS</th>
-              <th class="py-2">DEPTH</th>
-              <th class="py-2">CLASSIFICATION</th>
-              <th class="py-2">REFLECTION SIGNAL</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y">
-            {#each students as s, i}
-              <tr class="align-top">
-                <td class="py-3 pr-4">
-                  <div class="font-medium">{s.name}</div>
-                  <div class="text-xs text-slate-500">Group {s.group}</div>
-                </td>
-                <td class="py-3 pr-4 text-slate-700">{computeScore(s.name)}%</td
-                >
-                <td class="py-3 pr-4 text-slate-700">{computeHints(s.name)}</td>
-                <td class="py-3 pr-4 text-slate-700"
-                  >{computeDepth(s.name)}/5</td
-                >
-                <td class="py-3 pr-4">
-                  <span
-                    class="text-xs rounded px-2 py-1 {classificationClass(s)}"
-                    >{classificationLabel(s)}</span
-                  >
-                </td>
-                <td class="py-3 pr-4 text-slate-700 italic">
-                  <div class="flex items-start justify-between gap-3">
-                    <div class="truncate max-w-[30ch]">{s.summary}</div>
-                  </div>
-                  
-                </td>
-              </tr>
-            {/each}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
+    <TasksList
+      {tasks}
+      open={tasksOpen}
+      onClose={() => (tasksOpen = false)}
+      onAdd={addTaskManually}
+      onRemove={removeTask}
+      on:done={(e) => markTaskDone(e.detail)}
+    />
   </div>
 </main>
