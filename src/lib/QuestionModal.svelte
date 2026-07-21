@@ -19,40 +19,40 @@
       }}
     ></div>
     <div
-      class="relative z-70 w-[90%] max-w-2xl bg-white rounded-lg shadow-lg overflow-auto max-h-[80vh]"
+      class="relative z-70 w-[90%] max-w-2xl bg-white rounded-xl shadow-xl overflow-auto max-h-[80vh]"
     >
       <div
-        class="p-4 border-b border-slate-100 flex items-center justify-between"
+        class="p-4 border-b border-slate-200 flex items-center justify-between"
       >
-        <div class="text-sm font-semibold">{title}</div>
+        <div class="text-sm font-semibold text-slate-900">{title}</div>
         <button
           on:click={onClose}
-          class="text-xs px-2 py-1 bg-slate-100 rounded">Close</button
+          class="text-xs font-medium px-2.5 py-1 bg-slate-100 rounded-md hover:bg-slate-200">Close</button
         >
       </div>
       <div class="p-4 space-y-3">
         {#each questions as qq}
-          <div class="rounded border border-slate-100 bg-slate-50 p-3">
+          <div class="rounded-lg border border-slate-200 bg-slate-50 p-3">
             <div
               class="flex items-center justify-between text-xs text-slate-700 mb-2"
             >
               <div>{qq.label}</div>
-              <div class="text-xs text-slate-600">
+              <div class="text-xs font-medium text-slate-600">
                 {qq.parts[0]}% · {qq.parts[1]}% · {qq.parts[2]}%
               </div>
             </div>
             <div class="h-3 w-full rounded-full bg-white overflow-hidden">
               <div
                 style="width:{qq.parts[0]}%"
-                class="h-full bg-sky-300 float-left"
+                class="h-full bg-emerald-500 float-left"
               ></div>
               <div
                 style="width:{qq.parts[1]}%"
-                class="h-full bg-amber-200 float-left"
+                class="h-full bg-amber-500 float-left"
               ></div>
               <div
                 style="width:{qq.parts[2]}%"
-                class="h-full bg-rose-200 float-left"
+                class="h-full bg-rose-500 float-left"
               ></div>
             </div>
           </div>

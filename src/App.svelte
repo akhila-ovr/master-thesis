@@ -5,8 +5,6 @@
   import ReflectionSummary from "./lib/ReflectionSummary.svelte";
   import QuestionBreakdown from "./lib/QuestionBreakdown.svelte";
   import StudentGroups from "./lib/Groups.svelte";
-  import TaskSuggestions from "./lib/TaskSuggestions.svelte";
-  import TasksList from "./lib/TasksList.svelte";
 
   let rubricOpen = false;
 
@@ -18,57 +16,134 @@
     rubricOpen = false;
   }
 
-  // Shared data
-  export const stats = [
-    {
-      label: "Correct Answers - First Try",
-      value: "29%",
-      tone: "success",
-    },
-    {
-      label: "Correct Answers - After Retry",
-      value: "47%",
-      tone: "warning",
-    },
-    { label: "Incorrect Answers", value: "24%", tone: "danger" },
-  ];
-
-  const averageReflectionDepth = "2.4/5";
+  const averageReflectionDepth = "2.8/5";
 
   export const questionTypes = [
     {
       label: "True / False (3 questions)",
       parts: [55, 25, 20],
       questions: [
-        { parts: [62, 20, 18] },
-        { parts: [57, 25, 18] },
-        { parts: [31, 34, 35] },
+        {
+          parts: [62, 20, 18],
+          question: "Sea turtles can mistake plastic bags for jellyfish.",
+          options: ["True", "False"],
+          answer: "True",
+        },
+        {
+          parts: [57, 25, 18],
+          question: "Fish can get sick from eating tiny pieces of plastic.",
+          options: ["True", "False"],
+          answer: "True",
+        },
+        {
+          parts: [31, 34, 35],
+          question: "All plastic in the ocean sinks straight to the bottom.",
+          options: ["True", "False"],
+          answer: "False",
+        },
       ],
     },
     {
       label: "Multiple choice (4 questions)",
       parts: [70, 20, 10],
       questions: [
-        { parts: [78, 15, 7] },
-        { parts: [65, 20, 15] },
-        { parts: [70, 18, 12] },
-        { parts: [67, 27, 6] },
+        {
+          parts: [78, 15, 7],
+          question: "What are tiny broken-down pieces of plastic called?",
+          options: ["Microplastics", "Nanofish", "Plastic dust", "Sea sand"],
+          answer: "Microplastics",
+        },
+        {
+          parts: [65, 20, 15],
+          question:
+            "Which of these animals is most likely to mistake a plastic bag for food?",
+          options: ["Sea turtle", "Eagle", "Rabbit", "Squirrel"],
+          answer: "Sea turtle",
+        },
+        {
+          parts: [70, 18, 12],
+          question:
+            "What happens when a small fish eats plastic and a bigger fish eats that small fish?",
+          options: [
+            "The plastic disappears",
+            "The plastic passes up the food chain",
+            "The bigger fish becomes healthier",
+            "Nothing happens",
+          ],
+          answer: "The plastic passes up the food chain",
+        },
+        {
+          parts: [67, 27, 6],
+          question: "What is the best way to stop plastic ending up in the ocean?",
+          options: [
+            "Burn it at the beach",
+            "Throw it further inland",
+            "Reduce, reuse, and recycle it properly",
+            "Bury it in the sand",
+          ],
+          answer: "Reduce, reuse, and recycle it properly",
+        },
       ],
     },
     {
       label: "Fill in blanks (2 questions)",
       parts: [58, 28, 14],
-      questions: [{ parts: [60, 25, 15] }, { parts: [56, 31, 13] }],
+      questions: [
+        {
+          parts: [60, 25, 15],
+          question: "Plastic bags can look like ______ to a hungry sea turtle.",
+          options: ["jellyfish", "seaweed", "coral", "sand"],
+          answer: "jellyfish",
+        },
+        {
+          parts: [56, 31, 13],
+          question:
+            "When plastic breaks into very small pieces, we call it ______.",
+          options: ["microplastic", "macroplastic", "nanofish", "plastic dust"],
+          answer: "microplastic",
+        },
+      ],
     },
     {
       label: "Drag & drop (2 questions)",
       parts: [72, 20, 8],
-      questions: [{ parts: [74, 18, 8] }, { parts: [70, 22, 8] }],
+      questions: [
+        {
+          parts: [74, 18, 8],
+          question: "Drag each item to where it most commonly ends up in the ocean.",
+          options: [
+            "Plastic bottle → floating on the surface",
+            "Fishing net → tangled around coral",
+            "Plastic bag → drifting near the seabed",
+          ],
+        },
+        {
+          parts: [70, 22, 8],
+          question:
+            "Drag each animal to the food chain step where it is most at risk from eating plastic.",
+          options: [
+            "Plankton → eats microplastics directly",
+            "Small fish → eats plankton with plastic inside",
+            "Seabird → eats fish with plastic inside",
+          ],
+        },
+      ],
     },
     {
       label: "Sorting (1 question)",
       parts: [66, 24, 10],
-      questions: [{ parts: [66, 24, 10] }],
+      questions: [
+        {
+          parts: [66, 24, 10],
+          question:
+            "Put these in order from least harmful to most harmful for ocean animals.",
+          options: [
+            "Litter left on the beach",
+            "Plastic bag floating in the sea",
+            "Plastic bag eaten by a turtle",
+          ],
+        },
+      ],
     },
   ];
 
@@ -87,95 +162,278 @@
     }
   }
 
-  // Theme: kid-friendly modern palette (soft, distinct)
+  // Theme: two color systems.
+  // 1) Semantic (correct/retry/incorrect) for anything scoring right vs wrong.
+  // 2) Categorical colors for data with no right/wrong answer — creative
+  //    paths, debate sides. Purple/amber/sky, matching the app's pastel
+  //    accent palette rather than a single-hue ramp.
   export const themeColors = {
-    primary: "#60A5FA", // soft blue
-    secondary: "#A78BFA", // soft purple
-    accent: "#FDBA74", // soft orange
-    mint: "#86EFAC", // soft mint
-    pink: "#FCA5A5", // soft pink
-    // default trio for pie slices
-    pastelPalette: ["#60A5FA", "#FDBA74", "#86EFAC"],
+    correct: "#10b981", // emerald-500
+    retry: "#f59e0b", // amber-500
+    incorrect: "#f43f5e", // rose-500
+    categoryA: "#a855f7", // accent-500 (purple) — debate "Vio"
+    categoryB: "#10b981", // emerald-500 — debate "Mint"
+    pastelPalette: ["#a855f7", "#f59e0b", "#38bdf8"],
   };
 
-  // Shared pastel palette used across all creative pie charts (from theme)
+  // Shared accent-ramp palette used across all creative pie charts (from theme)
   const creativePalette = themeColors.pastelPalette;
 
   // Four creative path questions; each has three path-option percentages
   // All use the same soft pastel palette for consistency
   export const creative = [
-    { label: "Path Q1", parts: [45, 32, 23], colors: creativePalette },
-    { label: "Path Q2", parts: [30, 40, 30], colors: creativePalette },
-    { label: "Path Q3", parts: [25, 50, 25], colors: creativePalette },
-    { label: "Path Q4", parts: [60, 20, 20], colors: creativePalette },
+    { label: "You are at the park and see a plastic juice bottle on the grass near a duck pond. What do you do?", parts: [45, 32, 23], colors: creativePalette },
+    // { label: "You want to help the ocean animals. Which change to your school lunch would make the biggest difference?", parts: [30, 40, 30], colors: creativePalette },
+    // { label: "Path Q3", parts: [25, 50, 25], colors: creativePalette },
+    // { label: "Path Q4", parts: [60, 20, 20], colors: creativePalette },
   ];
+  const creativeOptionLabels = [
+    "Pick it up and put it in a bin",
+    "Tell a friend to help you pick it up",
+    "Leave it because it's not your trash",
+  ];
+
+  export const debate = {
+    title:
+      'Topic: "Humans should stop all development near wildlife habitats"',
+    left: {
+      name: "Vio",
+      pct: 58,
+      stance:
+        "Protect habitat first: slow development, avoid fragmentation, and keep wildlife corridors open.",
+      students: ["Finn D.", "Amara K.", "Priya N.", "Luca B.", "Sofia M."],
+    },
+    right: {
+      name: "Mint",
+      pct: 42,
+      stance:
+        "Development can continue if it is carefully managed with mitigation and planning.",
+      students: ["Omar S.", "Noah R.", "James T.", "Yara H.", "Lina P."],
+    },
+  };
 
   export const reflectionSummary =
     "Most students identify littering and plastic as harmful; several reflections describe effects without explaining the mechanism.";
+
+  // Individual reflection depth scores (1-5, matching the reflection rubric)
+  // aren't tracked per student directly — generate them deterministically from
+  // each student's group assignment (which sets the plausible score range)
+  // plus a per-name hash (so scores are stable across renders, not random).
+  const groupScoreRanges: Record<string, [number, number]> = {
+    A: [1, 2], // low score, error in reflection
+    B: [1, 2], // high score, but surface-level reflection
+    C: [4, 5], // high score, rich reflection
+    D: [2, 4], // mixed performance
+  };
+
+  function computeReflectionScore(name: string, group: string): number {
+    const [min, max] = groupScoreRanges[group] ?? [2, 4];
+    const span = max - min + 1;
+    const hash = name.split("").reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
+    return min + (hash % span);
+  }
+
+  // Individual quiz answers, debate side, and creative-story pick aren't
+  // tracked per student either — only class-wide aggregates exist (the
+  // percentages shown in Question type breakdown / Creative story). Generate
+  // each student's individual results deterministically so they're stable
+  // across renders and roughly consistent with those aggregate percentages,
+  // rather than genuinely random.
+  function hashOf(...parts: string[]): number {
+    return parts
+      .join("|")
+      .split("")
+      .reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
+  }
+
+  function getDebateSide(name: string): string | null {
+    if (debate.left.students.includes(name)) return debate.left.name;
+    if (debate.right.students.includes(name)) return debate.right.name;
+    return null;
+  }
+
+  function pickCreativeChoice(name: string): string {
+    const [p0, p1] = creative[0]?.parts ?? [45, 32, 23];
+    const roll = hashOf(name, "creative") % 100;
+    if (roll < p0) return creativeOptionLabels[0];
+    if (roll < p0 + p1) return creativeOptionLabels[1];
+    return creativeOptionLabels[2];
+  }
+
+  // Individual quiz accuracy also isn't tracked per student — only the
+  // class-wide per-question percentages exist (used for the aggregate bars
+  // in Question type breakdown). For an individual student's 12 answers, use
+  // their GROUP's known performance band instead of the class-wide numbers,
+  // so a Group A student (quiz score below 55%) actually shows mostly wrong
+  // answers rather than drifting toward the class average.
+  const groupQuizParts: Record<string, [number, number, number]> = {
+    A: [20, 25, 55], // below 55% combined correct
+    B: [55, 30, 15], // 80%+ combined correct
+    C: [60, 30, 10], // scored well, slightly ahead of B
+    D: [35, 30, 35], // mixed
+  };
+
+  function pickOutcome(
+    name: string,
+    questionKey: string,
+    parts: number[],
+  ): "correct" | "retry" | "wrong" {
+    const [p0, p1] = parts;
+    const roll = hashOf(name, questionKey) % 100;
+    if (roll < p0) return "correct";
+    if (roll < p0 + p1) return "retry";
+    return "wrong";
+  }
+
+  function computeQuizAnswers(name: string, group: string) {
+    const parts = groupQuizParts[group] ?? [40, 30, 30];
+    return questionTypes.flatMap((qt: any) =>
+      qt.questions.map((q: any) => ({
+        typeLabel: qt.label as string,
+        qLabel: q.label as string,
+        question: (q.question as string) ?? "",
+        outcome: pickOutcome(name, `${q.label}-${q.question}`, parts),
+      })),
+    );
+  }
 
   export const students = [
     {
       name: "Finn D.",
       group: "A",
-      summary: "Strong; explains ingestion pathway",
-      transcript: "I saw a turtle with plastic in its stomach...",
+      summary: "Names that plastic hurts fish and turtles, but doesn't explain why or how it happens.",
+      transcript: `Sparkli: What did you learn about plastic and ocean animals today?
+Finn: plastic is bad for the fish and the turtles get stuck in bags
+Sparkli: Why do you think that happens?
+Finn: i dont know it just happens i think`,
     },
     {
       name: "Omar S.",
       group: "A",
-      summary: "Mentions habitat loss",
-      transcript: "Animals lose their homes when we build here...",
+      summary: "Reflection is blank of real content: it just says the work was finished, with nothing about the expedition itself.",
+      transcript: `Sparkli: What did you learn about plastic and ocean animals today?
+Omar: it was ok i finished
+Sparkli: Can you tell me one thing that happens to the animals?
+Omar: um i dont remember`,
     },
     {
       name: "Noah R.",
       group: "B",
-      summary: "Surface-level",
-      transcript: "Plastic is bad for animals.",
+      summary: "Reflection doesn't mention anything from the expedition: just a brief comment that the task was done.",
+      transcript: `Sparkli: What did you learn about plastic and ocean animals today?
+Noah: it was good i did it
+Sparkli: What happens to the animals when there is plastic in the sea?
+Noah: i dont know sorry`,
     },
     {
       name: "Amara K.",
       group: "B",
-      summary: "Connects to community",
-      transcript: "We can organize a clean-up...",
+      summary: "Suggests picking up litter at the beach, but doesn't explain why it matters or what happens if it's left.",
+      transcript: `Sparkli: What did you learn about plastic and ocean animals today?
+Amara: we should pick up litter at the beach
+Sparkli: Why do you think picking up litter helps?
+Amara: because its yucky and its good to pick it up`,
     },
     {
       name: "James T.",
       group: "B",
-      summary: "Good detail on ingestion",
-      transcript: "Ingestion causes blockages and toxins...",
+      summary: "Reflection is just two words and doesn't reference anything from the expedition.",
+      transcript: `Sparkli: What did you learn about plastic and ocean animals today?
+James: it was fine
+Sparkli: Can you tell me anything about the animals and the plastic?
+James: not really sorry`,
     },
     {
       name: "Luca B.",
       group: "C",
-      summary: "Short, correct",
-      transcript: "They eat plastic by mistake.",
+      summary: "Explains that fish mistake plastic for food and get it stuck inside them, ties it to his nan's beach cleanups, and notes he hadn't realized plastic actually gets stuck inside fish before.",
+      transcript: `Sparkli: What did you learn about plastic and ocean animals today?
+Luca: the fish eat the plastic because they think its food and it gets stuck inside them and makes them really sick
+Sparkli: Have you heard about this before?
+Luca: yeah my nan does beach cleanups but i didnt know it actually got stuck inside the fish thats so sad`,
     },
     {
       name: "Priya N.",
       group: "C",
-      summary: "Reflective",
-      transcript: "I worry about long-term effects...",
+      summary: "Explains how plastic breaks down and moves up the food chain from small fish to bigger ones, and reflects that she hadn't realized it could reach animals as large as whales.",
+      transcript: `Sparkli: What did you learn about plastic and ocean animals today?
+Priya: the plastic breaks into tiny tiny pieces and the small fish eat it and then bigger fish eat the small fish so the plastic goes up the whole chain
+Sparkli: Did you know about this before?
+Priya: i knew this happened before but i didnt realise it could go all the way up to whales thats scary`,
     },
     {
       name: "Yara H.",
       group: "C",
-      summary: "Surface",
-      transcript: "Plastic is bad for sea life.",
+      summary: "Explains that turtles mistake plastic bags for jellyfish and get sick from eating them, and reflects that she hadn't realized how many turtles are affected.",
+      transcript: `Sparkli: What did you learn about plastic and ocean animals today?
+Yara: sea turtles eat plastic bags because they think they look like jellyfish and it makes them really really sick
+Sparkli: Had you heard about this before?
+Yara: i saw something about this before but i didnt know how many turtles actually got hurt by it thats so sad`,
     },
     {
       name: "Sofia M.",
       group: "D",
-      summary: "Mechanism noted",
-      transcript: "Microplastics enter the food chain...",
+      summary: "Explains how microplastics enter the water and get eaten by small fish, and notes she hadn't realized plastic could break down into pieces that small.",
+      transcript: `Sparkli: What did you learn about plastic and ocean animals today?
+Sofia: microplastics get into the water and the little fish eat them without even knowing and then they get sick
+Sparkli: Is there anything that surprised you?
+Sofia: i didnt know plastic could break into pieces that tiny until we learned about it today`,
     },
     {
       name: "Lina P.",
       group: "D",
-      summary: "Personal connection",
-      transcript: "My local beach had plastic everywhere...",
+      summary: "Shares a personal observation about plastic on her local beach, but doesn't explain why it's a problem.",
+      transcript: `Sparkli: What did you learn about plastic and ocean animals today?
+Lina: my beach had lots of plastic on it
+Sparkli: Why do you think that is a problem?
+Lina: i dont know it was just there and it looked yucky`,
+    },
+  ].map((s) => ({
+    ...s,
+    score: computeReflectionScore(s.name, s.group),
+    debateSide: getDebateSide(s.name),
+    creativeChoice: pickCreativeChoice(s.name),
+    quizAnswers: computeQuizAnswers(s.name, s.group),
+  }));
+
+  // Class-wide quiz stats: derived from every student's individual question
+  // results (rather than a separately hand-set number) so this can't drift
+  // out of sync with the per-student data shown in Student groups.
+  function computeClassQuizStats(roster: typeof students) {
+    const all = roster.flatMap((s) => s.quizAnswers ?? []);
+    const total = all.length || 1;
+    const correct = all.filter((a) => a.outcome === "correct").length;
+    const retry = all.filter((a) => a.outcome === "retry").length;
+    const wrong = all.filter((a) => a.outcome === "wrong").length;
+    return {
+      correctPct: Math.round((correct / total) * 100),
+      retryPct: Math.round((retry / total) * 100),
+      wrongPct: Math.round((wrong / total) * 100),
+    };
+  }
+  const classQuizStats = computeClassQuizStats(students);
+
+  export const stats = [
+    {
+      label: "Correct Answers - First Try",
+      value: `${classQuizStats.correctPct}%`,
+      tone: "success",
+    },
+    {
+      label: "Correct Answers - After Retry",
+      value: `${classQuizStats.retryPct}%`,
+      tone: "warning",
+    },
+    {
+      label: "Incorrect Answers",
+      value: `${classQuizStats.wrongPct}%`,
+      tone: "danger",
     },
   ];
 
+  // Chip color maps to severity, not an arbitrary hue: danger (needs
+  // re-teaching) > warning (needs deeper prompting) > neutral (mixed) >
+  // success (on track).
   export const groups = [
     {
       id: "A",
@@ -188,8 +446,8 @@
     {
       id: "B",
       label: "Group B: High score, surface reflection",
-      chipTextClass: "text-indigo-700",
-      chipBgClass: "bg-indigo-100",
+      chipTextClass: "text-amber-700",
+      chipBgClass: "bg-amber-100",
       description:
         "This group scored 80%+ but their reflections are surface-level. Recommend prompting for deeper thinking.",
     },
@@ -204,78 +462,41 @@
     {
       id: "D",
       label: "Group D: Mixed performance",
-      chipTextClass: "text-yellow-700",
-      chipBgClass: "bg-yellow-100",
+      chipTextClass: "text-slate-700",
+      chipBgClass: "bg-slate-100",
       description:
         "This group has mixed scores and reflections. Recommend reviewing individual student performance for targeted support.",
     },
   ];
 
-  // Tasks & suggestions state
-  let tasks: Array<any> = [];
-  let tasksOpen = false;
-
-  $: pendingTasks = tasks.filter((t) => !t.done);
-
-  let suggestions: Array<any> = [
+  // Recommended actions, one per group — informational only. Teachers read
+  // these and decide for themselves; there's no accept/reject or task list.
+  export const suggestions = [
     {
-      title: "Re-teach the ingestion pathway",
+      title: "Walk through the ingestion pathway with the whole group",
+      group: "A",
       summary:
-        "Group A (5 students) scored below 55% and reflections miss the ingestion mechanism. Consider re-teaching this concept.",
-      task: {
-        title: "Re-teach the ingestion pathway",
-        priority: "high",
-        note: "Consider using Finn D.'s reflection as example",
-      },
+        "Finn and Omar can both say plastic hurts sea animals, but neither explains why: Finn's reflection stops at \"they get stuck in bags,\" and Omar's is close to blank. That gap matches their quiz results: both missed the questions on how plastic actually causes harm, which is likely why they scored below 55%. They also split on the debate rather than voting the same way, so this isn't a shared opinion; it's a shared gap in understanding the mechanism.",
     },
     {
-      title: "Prompt self-evaluation",
+      title: "Ask them to explain their reasoning behind their answers",
+      group: "B",
       summary:
-        "Group B students submitted surface reflections despite high scores. Consider prompting metacognitive self-evaluation.",
-      task: {
-        title: "Prompt self-evaluation",
-        priority: "normal",
-        note: "Add 'I know this because...' prompt",
-      },
+        "Noah, Amara, and James all scored 80%+ on the quiz, they clearly understand the material, but their reflections are thin: Noah and James wrote almost nothing, and Amara only names an action (\"pick up litter\") without saying why it matters. Two of the three did take a side in the debate, so they can reason when the format gives them more structure. Asking them to explain their reasoning out loud, rather than in writing, may unlock what they already know.",
+    },
+    {
+      title: "Have them argue the opposite side of the debate",
+      group: "C",
+      summary:
+        "Luca, Priya, and Yara all explain the mechanism, connect it to something they already knew, and name something new they've understood: the strongest reflections in the class. They also split on the debate (two Vio, one Mint) instead of voting as a block, which suggests they're reasoning through the topic on their own rather than following the group. They're ready for an extension task, like arguing the other side of the debate or applying the idea to a new scenario.",
+    },
+    {
+      title: "Check in with Sofia and Lina one-on-one",
+      group: "D",
+      summary:
+        "Sofia and Lina are grouped as \"mixed,\" but their reflections show two different needs, not one shared gap. Sofia explains the mechanism and names what surprised her: close to Group C's level. Lina names a personal observation (\"my beach had lots of plastic on it\") but doesn't explain why it matters, more like Group A. They also split on the debate. Treating them as one group risks under-challenging Sofia and under-supporting Lina; worth reviewing them individually instead.",
     },
   ];
-
-  function addSuggestionToTasks(s: any) {
-    // accept suggestion and turn it into a checklist task
-    const merged = {
-      ...s.task,
-      reason: s.summary,
-      done: false,
-    };
-    tasks = [merged, ...tasks];
-    // remove suggestion from the recommendation list
-    suggestions = suggestions.filter((x) => x !== s);
-  }
-
-  function rejectSuggestion(i: number) {
-    suggestions.splice(i, 1);
-    suggestions = suggestions.slice();
-  }
-
-  function addTaskManually(t: any) {
-    tasks = [{ ...t, done: false }, ...tasks];
-  }
-
-  function removeTask(i: number) {
-    tasks.splice(i, 1);
-    tasks = tasks.slice();
-  }
-
-  function openTasks() {
-    tasksOpen = true;
-  }
-
-  function markTaskDone(i: number) {
-    const t = tasks[i];
-    if (!t) return;
-    tasks[i] = { ...t, done: true };
-    tasks = tasks.slice();
-  }
 
   // Helpers for student table (simple deterministic heuristics)
   function computeScore(name: string) {
@@ -301,8 +522,8 @@
 
   function classificationClass(s: any) {
     const lab = classificationLabel(s);
-    if (lab === "Error") return "text-red-700 bg-red-100";
-    if (lab === "Surface") return "text-rose-700 bg-rose-100";
+    if (lab === "Error") return "text-rose-700 bg-rose-100";
+    if (lab === "Surface") return "text-amber-700 bg-amber-100";
     return "text-emerald-700 bg-emerald-100";
   }
 
@@ -310,99 +531,55 @@
     if (!t) return "";
     return t.length > n ? t.slice(0, n - 1) + "…" : t;
   }
+
+  let subtopics = [
+    { name: "Context", score: 4 },
+    { name: "Emotion", score: 5 },
+    { name: "Next Steps", score: 3 }
+  ];
 </script>
 
-<main class="min-h-screen bg-[#f6f3ee] text-slate-800 p-6">
+<main class="app-canvas min-h-screen text-slate-800 p-6 md:p-8">
   <div class="mx-auto max-w-6xl">
-    <div
-      class="mb-4 rounded-lg border border-sky-100 bg-sky-100/70 px-4 py-3 text-sky-950 shadow-sm"
-    >
-      <div class="flex items-start gap-3">
-        <div
-          class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-sky-300 text-sky-600"
-        >
-          <span class="text-[11px] leading-none font-semibold">i</span>
-        </div>
-        <div>
-          <div class="text-sm font-semibold">
-            This expedition is still in progress
-          </div>
-          <div class="text-xs text-sky-950/80">
-            The data may change until every student completes the expedition.
-          </div>
-        </div>
-      </div>
-    </div>
 
-    <header class="mb-4 flex items-center justify-between">
-      <div>
-        <h1 class="text-xl font-semibold">
-          Nature's Wonderful Animals — <span
-            class="text-sm font-normal text-slate-600">expedition review</span
-          >
+    <header class="mb-6 flex flex-col sm:flex-row gap-3">
+      <div
+        class="flex-1 flex items-center gap-3.5 rounded-full pl-2.5 pr-5 py-2 shadow-lg shadow-accent-200/40"
+        style="background: linear-gradient(100deg, #FDE68A 0%, #F9A8D4 45%, #C4B5FD 100%);"
+      >
+        <div class="w-11 h-11 rounded-full bg-white flex items-center justify-center text-xl shadow-sm shrink-0">🌿</div>
+        <h1 class="font-display text-lg font-bold text-violet-950">
+          Nature's Wonderful Animals
         </h1>
+        <span class="ml-auto shrink-0 rounded-full bg-white/70 px-3 py-1 text-xs font-bold text-violet-800">Expedition review</span>
       </div>
-      <div class="text-sm text-slate-600 flex items-center gap-3">
-        <span>Completed yesterday · 8 / {students.length} students</span>
+      <div class="flex gap-2.5 shrink-0">
+        <div class="flex items-center rounded-full border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-500 shadow-sm">Completed yesterday</div>
+        <div class="flex items-center rounded-full border-2 border-slate-900 px-4 text-sm font-bold text-slate-900" style="background: linear-gradient(120deg, #FBCFE8, #E9D5FF);">{students.length} / {students.length} students</div>
       </div>
     </header>
 
     <MainStats {stats} />
 
-    <!-- Pending tasks preview (only show when there are pending tasks) -->
-    {#if pendingTasks.length > 0}
-      <div class="mt-4">
-        <div class="rounded-lg border border-slate-200 bg-white p-4">
-          <h3 class="text-sm font-semibold text-slate-900 mb-3">Tasks to do</h3>
-          <div class="space-y-2">
-            {#each pendingTasks as t}
-              <div
-                class="flex items-center justify-between gap-2 rounded border p-2"
-              >
-                <div>
-                  <div class="text-sm font-medium">{t.title}</div>
-                  {#if t.note}
-                    <div class="text-xs text-slate-600">{t.note}</div>
-                  {/if}
-                </div>
-                <div class="flex items-center gap-2">
-                  <div class="text-xs text-slate-500">{t.priority}</div>
-                  <button
-                    class="text-xs px-2 py-1 bg-green-100 text-green-700 rounded"
-                    on:click={() =>
-                      markTaskDone(tasks.findIndex((x) => x === t))}
-                    >Done</button
-                  >
-                  <button
-                    class="text-xs px-2 py-1 bg-red-100 text-red-700 rounded"
-                    on:click={() => removeTask(tasks.findIndex((x) => x === t))}
-                    >Remove</button
-                  >
-                </div>
-              </div>
-            {/each}
-          </div>
-        </div>
-      </div>
-    {/if}
-
-    <div class="mt-4 grid gap-4 lg:grid-cols-[1fr_3fr]">
-      <div class="rounded-lg border border-slate-200 bg-white p-4">
-        <div
-          class="flex h-full flex-col items-center justify-center gap-2 text-center"
-        >
+    <div class="mt-6 grid gap-4 lg:grid-cols-[1fr_3fr]">
+      <div
+        class="rounded-3xl border border-accent-100 p-5 shadow-sm text-center"
+        style="background: linear-gradient(150deg, #F5F3FF, #FCE7F3);"
+      >
+        <div class="flex h-full flex-col items-center justify-center gap-3">
           <div>
-            <div class="text-xs text-slate-500">Average reflection depth</div>
-            <div class="mt-1 text-2xl font-semibold text-emerald-500">
+            <div class="text-xs font-semibold uppercase tracking-wide text-slate-500">Average reflection depth</div>
+            <div class="font-display mt-2 text-4xl font-extrabold text-accent-600">
               {averageReflectionDepth}
             </div>
           </div>
           <button
             type="button"
             on:click={openRubric}
-            class="rounded-full border border-sky-200 bg-sky-50 px-3 py-1 text-xs font-medium text-sky-700"
+            class="rounded-full px-4 py-2 text-xs font-bold text-white shadow-md shadow-accent-300/40"
+            style="background: linear-gradient(100deg, #A855F7, #EC4899);"
           >
-            See how score is assigned
+            See why this score was assigned
           </button>
         </div>
       </div>
@@ -415,66 +592,27 @@
       />
     </div>
 
-    <!-- Suggested teacher actions -->
-    <div class="mt-4 mb-6">
-      <TaskSuggestions
-        {suggestions}
-        onAdd={addSuggestionToTasks}
-        onReject={rejectSuggestion}
-      />
-    </div>
-
-    <section class="grid gap-4 lg:grid-cols-2">
-      <div class="space-y-4">
+    <!-- Question type breakdown next to Student groups (with each group's
+         recommended action listed inline) -->
+    <section class="mt-6 mb-6 grid gap-6 lg:grid-cols-2">
+      <div>
         <QuestionBreakdown
           {questionTypes}
           {creative}
           {themeColors}
-          debate={{
-            title:
-              'Topic: "Humans should stop all development near wildlife habitats"',
-            left: {
-              name: "Vio",
-              pct: 58,
-              stance:
-                "Protect habitat first: slow development, avoid fragmentation, and keep wildlife corridors open.",
-              students: [
-                "Finn D.",
-                "Amara K.",
-                "Priya N.",
-                "Luca B.",
-                "Sofia M.",
-              ],
-            },
-            right: {
-              name: "Mint",
-              pct: 42,
-              stance:
-                "Development can continue if it is carefully managed with mitigation and planning.",
-              students: [
-                "Omar S.",
-                "Noah R.",
-                "James T.",
-                "Yara H.",
-                "Lina P.",
-              ],
-            },
-          }}
+          {debate}
+          {students}
         />
       </div>
-
-      <div class="space-y-4">
-        <StudentGroups {students} {groups} />
+      <div>
+        <StudentGroups
+          {students}
+          {groups}
+          {debate}
+          {creative}
+          {suggestions}
+        />
       </div>
     </section>
-
-    <TasksList
-      {tasks}
-      open={tasksOpen}
-      onClose={() => (tasksOpen = false)}
-      onAdd={addTaskManually}
-      onRemove={removeTask}
-      on:done={(e) => markTaskDone(e.detail)}
-    />
   </div>
 </main>

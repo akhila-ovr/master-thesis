@@ -1,6 +1,20 @@
 @import "tailwindcss";
 
-/* Global font: DM Sans */
+/* Playful pastel accent scale (violet) — brand, links, primary actions, and
+   gradient buttons (paired with pink-500) throughout the dashboard. */
+@theme {
+  --color-accent-50: #f5f3ff;
+  --color-accent-100: #ede9fe;
+  --color-accent-200: #ddd6fe;
+  --color-accent-300: #c4b5fd;
+  --color-accent-400: #a78bfa;
+  --color-accent-500: #a855f7;
+  --color-accent-600: #7c3aed;
+  --color-accent-700: #6d28d9;
+  --color-canvas: #fdfbf6;
+}
+
+/* Global font: DM Sans for body/UI, Baloo 2 for headings and big numbers */
 html,
 body {
   font-family:
@@ -11,6 +25,21 @@ body {
     Roboto,
     "Helvetica Neue",
     Arial;
+  -webkit-font-smoothing: antialiased;
+}
+
+.font-display {
+  font-family: "Baloo 2", "DM Sans", sans-serif;
+}
+
+/* Soft pastel wash behind the whole dashboard, matching the reference's
+   warm-cream + gradient-blob background. */
+.app-canvas {
+  background:
+    radial-gradient(circle at 8% 0%, rgba(250, 204, 21, 0.1), transparent 38%),
+    radial-gradient(circle at 96% 12%, rgba(236, 72, 153, 0.08), transparent 42%),
+    radial-gradient(circle at 50% 100%, rgba(56, 189, 248, 0.07), transparent 45%),
+    var(--color-canvas);
 }
 
 button {
@@ -18,19 +47,12 @@ button {
     background-color 120ms ease,
     color 120ms ease,
     border-color 120ms ease,
-    text-decoration-color 120ms ease;
-}
-button:hover,
-button:focus {
-  background-color: transparent !important;
-  text-decoration: underline;
-  text-decoration-thickness: 1px;
-  color: #0f172a; /* slate-900 */
-  cursor: pointer;
+    box-shadow 120ms ease,
+    opacity 120ms ease;
 }
 
-/* Keep focused buttons accessible (subtle outline for keyboard users) */
-button:focus {
-  outline: 2px solid rgba(15, 23, 42, 0.08);
-  outline-offset: 2px;
+/* Keep focused buttons accessible (visible accent ring for keyboard users) */
+button:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--color-canvas), 0 0 0 4px var(--color-accent-400);
 }

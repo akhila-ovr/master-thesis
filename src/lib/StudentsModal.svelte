@@ -29,11 +29,11 @@
       }}
     ></div>
     <div
-      class="relative z-10 w-[90%] max-w-4xl bg-white rounded-lg shadow-lg overflow-hidden"
+      class="relative z-10 w-[90%] max-w-4xl bg-white rounded-xl shadow-xl overflow-hidden"
     >
       <div class="flex">
-        <div class="w-1/3 border-r border-slate-100 max-h-[70vh] overflow-auto">
-          <div class="p-4 text-sm font-semibold">
+        <div class="w-1/3 border-r border-slate-200 max-h-[70vh] overflow-auto">
+          <div class="p-4 text-sm font-semibold text-slate-900">
             Reflections ({filtered.length})
           </div>
           {#each filtered as st, i}
@@ -47,18 +47,18 @@
           {/each}
         </div>
 
-        <div class="w-2/3 p-4">
+        <div class="w-2/3 p-5">
           <div class="flex items-start justify-between">
             <div>
               {#if selectedIndex !== null}
-                <div class="text-base font-semibold">
+                <div class="text-base font-semibold text-slate-900">
                   {filtered[selectedIndex].name}
                 </div>
                 <div class="text-sm text-slate-600 mt-1">
                   {filtered[selectedIndex].summary}
                 </div>
               {:else}
-                <div class="text-base font-semibold">Select a student</div>
+                <div class="text-base font-semibold text-slate-900">Select a student</div>
                 <div class="text-sm text-slate-600 mt-1">
                   Choose a student to view full reflection.
                 </div>
@@ -67,21 +67,21 @@
             <div>
               <button
                 on:click={onClose}
-                class="text-xs px-2 py-1 bg-slate-100 rounded">Close</button
+                class="text-xs font-medium px-2.5 py-1 bg-slate-100 rounded-md hover:bg-slate-200">Close</button
               >
             </div>
           </div>
 
           {#if selectedIndex !== null}
             <div class="mt-4">
-              <div class="text-sm text-slate-700">Summary</div>
+              <div class="text-sm font-medium text-slate-700">Summary</div>
               <div class="mt-2 text-sm text-slate-800">
                 {filtered[selectedIndex].summary}
               </div>
               <div class="mt-4">
                 <button
                   on:click={onToggleTranscript}
-                  class="rounded-full border border-slate-200 px-3 py-1 text-xs"
+                  class="rounded-full border border-slate-200 px-3 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50"
                   >{showTranscript
                     ? "Hide transcript"
                     : "Show transcript"}</button
@@ -89,7 +89,7 @@
               </div>
               {#if showTranscript}
                 <pre
-                  class="mt-3 p-3 bg-slate-50 text-sm text-slate-700 rounded max-h-48 overflow-auto">{filtered[
+                  class="mt-3 p-3 bg-slate-50 text-sm text-slate-700 rounded-lg whitespace-pre-wrap break-words">{filtered[
                     selectedIndex
                   ].transcript}</pre>
               {/if}
