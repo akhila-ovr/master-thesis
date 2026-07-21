@@ -1,22 +1,9 @@
 <!-- App.svelte: application root — contains shared data and passes it to child components.
-     Components: MainStats, ReflectionSummary, QuestionBreakdown, StudentGroups -->
+     Components: MainStats, QuestionBreakdown, StudentGroups -->
 <script lang="ts">
   import MainStats from "./lib/MainStats.svelte";
-  import ReflectionSummary from "./lib/ReflectionSummary.svelte";
   import QuestionBreakdown from "./lib/QuestionBreakdown.svelte";
   import StudentGroups from "./lib/Groups.svelte";
-
-  let rubricOpen = false;
-
-  function openRubric() {
-    rubricOpen = true;
-  }
-
-  function closeRubric() {
-    rubricOpen = false;
-  }
-
-  const averageReflectionDepth = "2.8/5";
 
   export const questionTypes = [
     {
@@ -212,27 +199,6 @@
     },
   };
 
-  export const reflectionSummary =
-    "Most students identify littering and plastic as harmful; several reflections describe effects without explaining the mechanism.";
-
-  // Individual reflection depth scores (1-5, matching the reflection rubric)
-  // aren't tracked per student directly — generate them deterministically from
-  // each student's group assignment (which sets the plausible score range)
-  // plus a per-name hash (so scores are stable across renders, not random).
-  const groupScoreRanges: Record<string, [number, number]> = {
-    A: [1, 2], // low score, error in reflection
-    B: [1, 2], // high score, but surface-level reflection
-    C: [4, 5], // high score, rich reflection
-    D: [2, 4], // mixed performance
-  };
-
-  function computeReflectionScore(name: string, group: string): number {
-    const [min, max] = groupScoreRanges[group] ?? [2, 4];
-    const span = max - min + 1;
-    const hash = name.split("").reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
-    return min + (hash % span);
-  }
-
   // Individual quiz answers, debate side, and creative-story pick aren't
   // tracked per student either — only class-wide aggregates exist (the
   // percentages shown in Question type breakdown / Creative story). Generate
@@ -390,7 +356,6 @@ Lina: i dont know it was just there and it looked yucky`,
     },
   ].map((s) => ({
     ...s,
-    score: computeReflectionScore(s.name, s.group),
     debateSide: getDebateSide(s.name),
     creativeChoice: pickCreativeChoice(s.name),
     quizAnswers: computeQuizAnswers(s.name, s.group),
@@ -432,32 +397,32 @@ Lina: i dont know it was just there and it looked yucky`,
   ];
 
   // Chip color maps to severity, not an arbitrary hue: danger (needs
-  // re-teaching) > warning (needs deeper prompting) > neutral (mixed) >
+  // re-teaching) > warning (needs more practice) > neutral (mixed) >
   // success (on track).
   export const groups = [
     {
       id: "A",
-      label: "Group A: Low score, error in reflection",
+      label: "Group A: Low score",
       chipTextClass: "text-rose-700",
       chipBgClass: "bg-rose-100",
       description:
-        "This group scored below 55% and reflections show errors or misconceptions. Recommend re-teaching key concepts.",
+        "This group scored below 55% on the quiz.",
     },
     {
       id: "B",
-      label: "Group B: High score, surface reflection",
+      label: "Group B: High score, needed retries",
       chipTextClass: "text-amber-700",
       chipBgClass: "bg-amber-100",
       description:
-        "This group scored 80%+ but their reflections are surface-level. Recommend prompting for deeper thinking.",
+        "This group scored 80%+ overall but needed several retries to get there.",
     },
     {
       id: "C",
-      label: "Group C: High score, rich reflection",
+      label: "Group C: High score, strong first attempt",
       chipTextClass: "text-emerald-700",
       chipBgClass: "bg-emerald-100",
       description:
-        "This group scored well and provided rich reflections. No immediate action needed, but consider enrichment activities.",
+        "This group scored well with strong first-attempt accuracy.",
     },
     {
       id: "D",
@@ -465,36 +430,7 @@ Lina: i dont know it was just there and it looked yucky`,
       chipTextClass: "text-slate-700",
       chipBgClass: "bg-slate-100",
       description:
-        "This group has mixed scores and reflections. Recommend reviewing individual student performance for targeted support.",
-    },
-  ];
-
-  // Recommended actions, one per group — informational only. Teachers read
-  // these and decide for themselves; there's no accept/reject or task list.
-  export const suggestions = [
-    {
-      title: "Walk through the ingestion pathway with the whole group",
-      group: "A",
-      summary:
-        "Finn and Omar can both say plastic hurts sea animals, but neither explains why: Finn's reflection stops at \"they get stuck in bags,\" and Omar's is close to blank. That gap matches their quiz results: both missed the questions on how plastic actually causes harm, which is likely why they scored below 55%. They also split on the debate rather than voting the same way, so this isn't a shared opinion; it's a shared gap in understanding the mechanism.",
-    },
-    {
-      title: "Ask them to explain their reasoning behind their answers",
-      group: "B",
-      summary:
-        "Noah, Amara, and James all scored 80%+ on the quiz, they clearly understand the material, but their reflections are thin: Noah and James wrote almost nothing, and Amara only names an action (\"pick up litter\") without saying why it matters. Two of the three did take a side in the debate, so they can reason when the format gives them more structure. Asking them to explain their reasoning out loud, rather than in writing, may unlock what they already know.",
-    },
-    {
-      title: "Have them argue the opposite side of the debate",
-      group: "C",
-      summary:
-        "Luca, Priya, and Yara all explain the mechanism, connect it to something they already knew, and name something new they've understood: the strongest reflections in the class. They also split on the debate (two Vio, one Mint) instead of voting as a block, which suggests they're reasoning through the topic on their own rather than following the group. They're ready for an extension task, like arguing the other side of the debate or applying the idea to a new scenario.",
-    },
-    {
-      title: "Check in with Sofia and Lina one-on-one",
-      group: "D",
-      summary:
-        "Sofia and Lina are grouped as \"mixed,\" but their reflections show two different needs, not one shared gap. Sofia explains the mechanism and names what surprised her: close to Group C's level. Lina names a personal observation (\"my beach had lots of plastic on it\") but doesn't explain why it matters, more like Group A. They also split on the debate. Treating them as one group risks under-challenging Sofia and under-supporting Lina; worth reviewing them individually instead.",
+        "This group has mixed quiz results across questions.",
     },
   ];
 
@@ -561,39 +497,7 @@ Lina: i dont know it was just there and it looked yucky`,
 
     <MainStats {stats} />
 
-    <div class="mt-6 grid gap-4 lg:grid-cols-[1fr_3fr]">
-      <div
-        class="rounded-3xl border border-accent-100 p-5 shadow-sm text-center"
-        style="background: linear-gradient(150deg, #F5F3FF, #FCE7F3);"
-      >
-        <div class="flex h-full flex-col items-center justify-center gap-3">
-          <div>
-            <div class="text-xs font-semibold uppercase tracking-wide text-slate-500">Average reflection depth</div>
-            <div class="font-display mt-2 text-4xl font-extrabold text-accent-600">
-              {averageReflectionDepth}
-            </div>
-          </div>
-          <button
-            type="button"
-            on:click={openRubric}
-            class="rounded-full px-4 py-2 text-xs font-bold text-white shadow-md shadow-accent-300/40"
-            style="background: linear-gradient(100deg, #A855F7, #EC4899);"
-          >
-            See why this score was assigned
-          </button>
-        </div>
-      </div>
-
-      <ReflectionSummary
-        {reflectionSummary}
-        {students}
-        {rubricOpen}
-        on:closeRubric={closeRubric}
-      />
-    </div>
-
-    <!-- Question type breakdown next to Student groups (with each group's
-         recommended action listed inline) -->
+    <!-- Question type breakdown next to Student groups -->
     <section class="mt-6 mb-6 grid gap-6 lg:grid-cols-2">
       <div>
         <QuestionBreakdown
@@ -610,7 +514,6 @@ Lina: i dont know it was just there and it looked yucky`,
           {groups}
           {debate}
           {creative}
-          {suggestions}
         />
       </div>
     </section>
