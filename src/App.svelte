@@ -361,37 +361,24 @@ Lina: i dont know it was just there and it looked yucky`,
     quizAnswers: computeQuizAnswers(s.name, s.group),
   }));
 
-  // Class-wide quiz stats: derived from every student's individual question
-  // results (rather than a separately hand-set number) so this can't drift
-  // out of sync with the per-student data shown in Student groups.
-  function computeClassQuizStats(roster: typeof students) {
-    const all = roster.flatMap((s) => s.quizAnswers ?? []);
-    const total = all.length || 1;
-    const correct = all.filter((a) => a.outcome === "correct").length;
-    const retry = all.filter((a) => a.outcome === "retry").length;
-    const wrong = all.filter((a) => a.outcome === "wrong").length;
-    return {
-      correctPct: Math.round((correct / total) * 100),
-      retryPct: Math.round((retry / total) * 100),
-      wrongPct: Math.round((wrong / total) * 100),
-    };
-  }
-  const classQuizStats = computeClassQuizStats(students);
-
+  // Class-wide quiz stats: hard-coded rather than derived from the
+  // per-student quiz answers, since those are regenerated from a randomized
+  // question order (see `shuffle` above) and would otherwise change on
+  // every reload.
   export const stats = [
     {
       label: "Correct Answers - First Try",
-      value: `${classQuizStats.correctPct}%`,
+      value: "46%",
       tone: "success",
     },
     {
       label: "Correct Answers - After Retry",
-      value: `${classQuizStats.retryPct}%`,
+      value: "29%",
       tone: "warning",
     },
     {
       label: "Incorrect Answers",
-      value: `${classQuizStats.wrongPct}%`,
+      value: "25%",
       tone: "danger",
     },
   ];
