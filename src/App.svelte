@@ -469,35 +469,6 @@ Lina: i dont know it was just there and it looked yucky`,
     },
   ];
 
-  // Recommended actions, one per group — informational only. Teachers read
-  // these and decide for themselves; there's no accept/reject or task list.
-  export const suggestions = [
-    {
-      title: "Walk through the ingestion pathway with the whole group",
-      group: "A",
-      summary:
-        "Finn and Omar can both say plastic hurts sea animals, but neither explains why: Finn's reflection stops at \"they get stuck in bags,\" and Omar's is close to blank. That gap matches their quiz results: both missed the questions on how plastic actually causes harm, which is likely why they scored below 55%. They also split on the debate rather than voting the same way, so this isn't a shared opinion; it's a shared gap in understanding the mechanism.",
-    },
-    {
-      title: "Ask them to explain their reasoning behind their answers",
-      group: "B",
-      summary:
-        "Noah, Amara, and James all scored 80%+ on the quiz, they clearly understand the material, but their reflections are thin: Noah and James wrote almost nothing, and Amara only names an action (\"pick up litter\") without saying why it matters. Two of the three did take a side in the debate, so they can reason when the format gives them more structure. Asking them to explain their reasoning out loud, rather than in writing, may unlock what they already know.",
-    },
-    {
-      title: "Have them argue the opposite side of the debate",
-      group: "C",
-      summary:
-        "Luca, Priya, and Yara all explain the mechanism, connect it to something they already knew, and name something new they've understood: the strongest reflections in the class. They also split on the debate (two Vio, one Mint) instead of voting as a block, which suggests they're reasoning through the topic on their own rather than following the group. They're ready for an extension task, like arguing the other side of the debate or applying the idea to a new scenario.",
-    },
-    {
-      title: "Check in with Sofia and Lina one-on-one",
-      group: "D",
-      summary:
-        "Sofia and Lina are grouped as \"mixed,\" but their reflections show two different needs, not one shared gap. Sofia explains the mechanism and names what surprised her: close to Group C's level. Lina names a personal observation (\"my beach had lots of plastic on it\") but doesn't explain why it matters, more like Group A. They also split on the debate. Treating them as one group risks under-challenging Sofia and under-supporting Lina; worth reviewing them individually instead.",
-    },
-  ];
-
   // Helpers for student table (simple deterministic heuristics)
   function computeScore(name: string) {
     const sum = name.split("").reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
@@ -592,8 +563,7 @@ Lina: i dont know it was just there and it looked yucky`,
       />
     </div>
 
-    <!-- Question type breakdown next to Student groups (with each group's
-         recommended action listed inline) -->
+    <!-- Question type breakdown next to Student groups -->
     <section class="mt-6 mb-6 grid gap-6 lg:grid-cols-2">
       <div>
         <QuestionBreakdown
@@ -610,7 +580,6 @@ Lina: i dont know it was just there and it looked yucky`,
           {groups}
           {debate}
           {creative}
-          {suggestions}
         />
       </div>
     </section>

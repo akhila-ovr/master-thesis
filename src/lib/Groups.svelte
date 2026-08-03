@@ -27,13 +27,8 @@
   }> = [];
   export let debate: any = {};
   export let creative: Array<{ label: string }> = [];
-  export let suggestions: Array<any> = [];
 
   $: creativeQuestion = creative?.[0]?.label ?? "";
-
-  function suggestionFor(groupId: string) {
-    return suggestions.find((s) => s.group === groupId);
-  }
 
   function debateStanceFor(side: string | null | undefined) {
     if (!side) return "";
@@ -120,11 +115,6 @@
     showTranscript = !showTranscript;
   }
 
-  let openActionGroupId: string | null = null;
-  function toggleAction(groupId: string) {
-    openActionGroupId = openActionGroupId === groupId ? null : groupId;
-  }
-
   let howGeneratedOpen = false;
   function openHowGenerated() {
     howGeneratedOpen = true;
@@ -153,7 +143,6 @@
   </div>
   <div class="mt-3 space-y-3">
     {#each groups as g}
-      {@const action = suggestionFor(g.id)}
       <div
         class="rounded-2xl p-4 bg-accent-50/40 border border-accent-100"
       >
@@ -171,42 +160,6 @@
             >
           </div>
           <div class="mt-3 text-sm text-slate-700">{g.description}</div>
-
-          {#if action}
-            <div class="relative mt-3">
-              <button
-                on:click={() => toggleAction(g.id)}
-                class="inline-flex items-center gap-1.5 text-xs font-bold text-accent-600 hover:text-accent-700"
-              >
-                💡 Recommended action
-              </button>
-
-              {#if openActionGroupId === g.id}
-                <div
-                  class="fixed inset-0 z-20"
-                  role="button"
-                  tabindex="0"
-                  aria-label="Close recommended action"
-                  on:click={() => (openActionGroupId = null)}
-                  on:keydown={(e) => {
-                    if (e.key === "Escape") openActionGroupId = null;
-                  }}
-                ></div>
-                <div class="absolute z-30 top-full left-0 mt-2 w-72 sm:w-80 max-w-[90vw] bg-white border border-accent-200 rounded-2xl shadow-xl p-4">
-                  <div class="flex items-start justify-between gap-2 mb-1">
-                    <div class="text-sm font-bold text-slate-900">{action.title}</div>
-                    <button
-                      on:click={() => (openActionGroupId = null)}
-                      class="text-slate-400 hover:text-slate-600 text-sm leading-none shrink-0"
-                      aria-label="Close recommended action"
-                      >✕</button
-                    >
-                  </div>
-                  <div class="text-xs text-slate-600 mt-1">{action.summary}</div>
-                </div>
-              {/if}
-            </div>
-          {/if}
         </div>
       </div>
     {/each}
