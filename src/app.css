@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-/* Playful pastel accent scale (violet) — brand, links, primary actions, and
+/* Playful pastel accent scale (violet): brand, links, primary actions, and
    gradient buttons (paired with pink-500) throughout the dashboard. */
 @theme {
   --color-accent-50: #f5f3ff;

@@ -39,7 +39,7 @@
       rating: "Naming only",
       characteristics:
         "Names something from the expedition with no explanation of why, how, or what it means.",
-      examples: ["we should not drop litter", "plastic is very bad"],
+      examples: ["gravity pulls things down", "Earth is round because of gravity"],
     },
     {
       score: "3",
@@ -47,8 +47,8 @@
       characteristics:
         "Gives a reason or simple cause-effect chain using because, so, or that's why.",
       examples: [
-        "the animals eat the plastic because they think its food and then they get sick",
-        "we need to pick up litter near the sea because the animals will eat it and get really sick",
+        "asteroids stay lumpy because they dont have enough mass so their gravity is too weak to pull them into a ball",
+        "the rock gets pulled to the middle from every side so it squashes into a sphere",
       ],
     },
     {
@@ -57,8 +57,8 @@
       characteristics:
         "Explains a cause-effect chain and also connects it to prior knowledge, a real example, or what they did not know before.",
       examples: [
-        "I already knew plastic was bad because my mum tells me to use a bag for life, but I didnt know the animals actually eat it",
-        "we watched something at school about ocean pollution and I didnt realise it killed them",
+        "I knew big planets had more gravity from a space book, but I didnt know it pulled them into a sphere",
+        "we watched a video about astronauts floating and I didnt realise down just means towards the centre",
       ],
     },
     {
@@ -67,15 +67,15 @@
       characteristics:
         "Explains the mechanism, connects it to personal experience or prior knowledge, and names something they now understand or are still wondering about.",
       examples: [
-        "I knew about plastic from a documentary, but I didnt really understand why it was so bad until now",
-        "I knew you had to pick up litter because my school does litter picks, but I still dont understand why they cant smell that its not real food",
+        "I knew the Earth was round from globes at school, but I didnt understand it was gravity pulling all the mass inward until now",
+        "I knew gravity made things fall, but Im still wondering why the gas planets go round too when theyre not solid",
       ],
     },
   ];
 
   const criticalReflectionExamples = [
-    "why do the companies keep making plastic bags if they know its bad",
-    "its not really fair that kids have to fix it when the adults made the mess",
+    "is it fair to take the planet name away from something just because its small",
+    "who actually gets to decide what counts as a planet",
   ];
 
   type RubricPage = "explanation" | "table";
@@ -268,7 +268,7 @@
 
             <div class="rounded-2xl border border-accent-100 bg-accent-50/50 p-4">
               <div class="text-xs font-bold uppercase tracking-wide text-accent-700 mb-1.5">The core gap</div>
-              <div class="text-sm text-slate-700">Most reflections cluster around one gap: students can say that plastic hurts ocean animals, but far fewer can explain how. A line like "it's bad" or naming an action like picking up litter shows awareness without mechanism; the student knows plastic is a problem but hasn't connected it to a cause and effect chain, such as ingestion, entanglement, or the food chain.</div>
+              <div class="text-sm text-slate-700">Most reflections cluster around one gap: students can say that Earth is round and that gravity is involved, but far fewer can explain the mechanism. A line like "gravity pulls it down" or "Earth is round because of gravity" shows awareness without the chain; the student hasn't connected mass to gravity, gravity to a pull toward the center from every direction, and that pull to the object being squeezed into a sphere.</div>
             </div>
 
             <div class="rounded-2xl border border-emerald-100 bg-emerald-50/50 p-4">

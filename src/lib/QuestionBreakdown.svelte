@@ -8,9 +8,9 @@
   export let students: Array<any> = [];
 
   const creativeOptionLabels = [
-    "Pick it up and put it in a bin",
-    "Tell a friend to help you pick it up",
-    "Leave it because it's not your trash",
+    "Round ball base with heavy metal marbles",
+    "Flat table base with metal marbles",
+    "Round ball base with light paper dots",
   ];
 
   function studentsForChoice(label: string) {

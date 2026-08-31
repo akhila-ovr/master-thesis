@@ -1,22 +1,9 @@
-<!-- App.svelte: application root — contains shared data and passes it to child components.
-     Components: MainStats, ReflectionSummary, QuestionBreakdown, StudentGroups -->
+<!-- App.svelte: application root. Holds the shared expedition data and the
+     header. The header student search (StudentSearch) is the only surface
+     currently rendered; the rest of the dashboard is being rebuilt. -->
 <script lang="ts">
-  import MainStats from "./lib/MainStats.svelte";
-  import ReflectionSummary from "./lib/ReflectionSummary.svelte";
-  import QuestionBreakdown from "./lib/QuestionBreakdown.svelte";
-  import StudentGroups from "./lib/Groups.svelte";
-
-  let rubricOpen = false;
-
-  function openRubric() {
-    rubricOpen = true;
-  }
-
-  function closeRubric() {
-    rubricOpen = false;
-  }
-
-  const averageReflectionDepth = "2.8/5";
+  import StudentSearch from "./lib/StudentSearch.svelte";
+  import ClassRoster from "./lib/ClassRoster.svelte";
 
   export const questionTypes = [
     {
@@ -25,19 +12,20 @@
       questions: [
         {
           parts: [62, 20, 18],
-          question: "Sea turtles can mistake plastic bags for jellyfish.",
+          question: "Gravity pulls matter toward a central point.",
           options: ["True", "False"],
           answer: "True",
         },
         {
           parts: [57, 25, 18],
-          question: "Fish can get sick from eating tiny pieces of plastic.",
+          question: "Every object with mass has its own gravitational pull.",
           options: ["True", "False"],
           answer: "True",
         },
         {
           parts: [31, 34, 35],
-          question: "All plastic in the ocean sinks straight to the bottom.",
+          question:
+            "Asteroids will eventually turn into perfectly round spheres if they float in space long enough.",
           options: ["True", "False"],
           answer: "False",
         },
@@ -49,39 +37,44 @@
       questions: [
         {
           parts: [78, 15, 7],
-          question: "What are tiny broken-down pieces of plastic called?",
-          options: ["Microplastics", "Nanofish", "Plastic dust", "Sea sand"],
-          answer: "Microplastics",
+          question: "Which statement best describes how Earth's gravity works?",
+          options: [
+            "Gravity pulls everything straight down toward the bottom of space",
+            "Gravity pulls all matter inward toward the center core of the planet",
+            "Gravity only pulls on water and air, not on solid ground",
+            "Gravity pushes objects outward away from the center of the planet",
+          ],
+          answer:
+            "Gravity pulls all matter inward toward the center core of the planet",
         },
         {
           parts: [65, 20, 15],
-          question:
-            "Which of these animals is most likely to mistake a plastic bag for food?",
-          options: ["Sea turtle", "Eagle", "Rabbit", "Squirrel"],
-          answer: "Sea turtle",
+          question: "About how far down is the center of the Earth?",
+          options: [
+            "About 40 miles",
+            "About 400 miles",
+            "About 4,000 miles",
+            "About 40,000 miles",
+          ],
+          answer: "About 4,000 miles",
         },
         {
           parts: [70, 18, 12],
-          question:
-            "What happens when a small fish eats plastic and a bigger fish eats that small fish?",
-          options: [
-            "The plastic disappears",
-            "The plastic passes up the food chain",
-            "The bigger fish becomes healthier",
-            "Nothing happens",
-          ],
-          answer: "The plastic passes up the food chain",
+          question: "What is the total amount of matter inside an object called?",
+          options: ["Mass", "Weight", "Volume", "Speed"],
+          answer: "Mass",
         },
         {
           parts: [67, 27, 6],
-          question: "What is the best way to stop plastic ending up in the ocean?",
+          question: "Why does an asteroid stay lumpy instead of becoming a sphere?",
           options: [
-            "Burn it at the beach",
-            "Throw it further inland",
-            "Reduce, reuse, and recycle it properly",
-            "Bury it in the sand",
+            "It is too cold to change shape",
+            "It spins around too fast",
+            "It does not have enough mass for a strong gravitational pull",
+            "It is made entirely of ice",
           ],
-          answer: "Reduce, reuse, and recycle it properly",
+          answer:
+            "It does not have enough mass for a strong gravitational pull",
         },
       ],
     },
@@ -91,16 +84,16 @@
       questions: [
         {
           parts: [60, 25, 15],
-          question: "Plastic bags can look like ______ to a hungry sea turtle.",
-          options: ["jellyfish", "seaweed", "coral", "sand"],
-          answer: "jellyfish",
+          question: "Everything you can touch and see is made of ______.",
+          options: ["matter", "gravity", "energy", "light"],
+          answer: "matter",
         },
         {
           parts: [56, 31, 13],
           question:
-            "When plastic breaks into very small pieces, we call it ______.",
-          options: ["microplastic", "macroplastic", "nanofish", "plastic dust"],
-          answer: "microplastic",
+            "This invisible force draws everything toward the ______ of the planet.",
+          options: ["core", "surface", "edge", "sky"],
+          answer: "core",
         },
       ],
     },
@@ -110,21 +103,21 @@
       questions: [
         {
           parts: [74, 18, 8],
-          question: "Drag each item to where it most commonly ends up in the ocean.",
+          question: "Drag each gravity cause to what it actually does in space.",
           options: [
-            "Plastic bottle → floating on the surface",
-            "Fishing net → tangled around coral",
-            "Plastic bag → drifting near the seabed",
+            "Gathering huge amounts of matter → increases the gravitational pull",
+            "Pulling equally from the center → creates a perfectly round shape",
+            "Lacking enough total mass → results in a lumpy object",
+            "Applying extreme gravitational pressure → bends and melts solid rock",
           ],
         },
         {
           parts: [70, 22, 8],
-          question:
-            "Drag each animal to the food chain step where it is most at risk from eating plastic.",
+          question: "Drag each space object to the shape its mass gives it.",
           options: [
-            "Plankton → eats microplastics directly",
-            "Small fish → eats plankton with plastic inside",
-            "Seabird → eats fish with plastic inside",
+            "Planet Earth → round sphere",
+            "A giant gas planet → round sphere",
+            "A tiny asteroid → lumpy, irregular shape",
           ],
         },
       ],
@@ -136,11 +129,11 @@
         {
           parts: [66, 24, 10],
           question:
-            "Put these in order from least harmful to most harmful for ocean animals.",
+            "Put these in order from least mass to most mass.",
           options: [
-            "Litter left on the beach",
-            "Plastic bag floating in the sea",
-            "Plastic bag eaten by a turtle",
+            "Your kitchen table",
+            "A tiny asteroid",
+            "Planet Earth",
           ],
         },
       ],
@@ -164,15 +157,15 @@
 
   // Theme: two color systems.
   // 1) Semantic (correct/retry/incorrect) for anything scoring right vs wrong.
-  // 2) Categorical colors for data with no right/wrong answer — creative
+  // 2) Categorical colors for data with no right/wrong answer, e.g. creative
   //    paths, debate sides. Purple/amber/sky, matching the app's pastel
   //    accent palette rather than a single-hue ramp.
   export const themeColors = {
     correct: "#10b981", // emerald-500
     retry: "#f59e0b", // amber-500
     incorrect: "#f43f5e", // rose-500
-    categoryA: "#a855f7", // accent-500 (purple) — debate "Vio"
-    categoryB: "#10b981", // emerald-500 — debate "Mint"
+    categoryA: "#a855f7", // accent-500 (purple), debate "Vio"
+    categoryB: "#10b981", // emerald-500, debate "Mint"
     pastelPalette: ["#a855f7", "#f59e0b", "#38bdf8"],
   };
 
@@ -182,41 +175,38 @@
   // Four creative path questions; each has three path-option percentages
   // All use the same soft pastel palette for consistency
   export const creative = [
-    { label: "You are at the park and see a plastic juice bottle on the grass near a duck pond. What do you do?", parts: [45, 32, 23], colors: creativePalette },
-    // { label: "You want to help the ocean animals. Which change to your school lunch would make the biggest difference?", parts: [30, 40, 30], colors: creativePalette },
+    { label: "Maya and Leo are building a gravity model for the science fair to show how gravity pulls matter toward a center point. How should they build it?", parts: [46, 30, 24], colors: creativePalette },
+    // { label: "Path Q2", parts: [30, 40, 30], colors: creativePalette },
     // { label: "Path Q3", parts: [25, 50, 25], colors: creativePalette },
     // { label: "Path Q4", parts: [60, 20, 20], colors: creativePalette },
   ];
   const creativeOptionLabels = [
-    "Pick it up and put it in a bin",
-    "Tell a friend to help you pick it up",
-    "Leave it because it's not your trash",
+    "Round ball base with heavy metal marbles",
+    "Flat table base with metal marbles",
+    "Round ball base with light paper dots",
   ];
 
   export const debate = {
     title:
-      'Topic: "Humans should stop all development near wildlife habitats"',
+      'Topic: "We should stop calling small space rocks planets if they are not round"',
     left: {
       name: "Vio",
       pct: 58,
       stance:
-        "Protect habitat first: slow development, avoid fragmentation, and keep wildlife corridors open.",
+        "History and discovery matter more than labels: names carry the story of how we found each object, and taking a title away over size ignores that.",
       students: ["Finn D.", "Amara K.", "Priya N.", "Luca B.", "Sofia M."],
     },
     right: {
       name: "Mint",
       pct: 42,
       stance:
-        "Development can continue if it is carefully managed with mitigation and planning.",
+        "Science needs clear, mass-based definitions: if an object lacks the mass for gravity to pull it into a sphere, it should not be called a planet.",
       students: ["Omar S.", "Noah R.", "James T.", "Yara H.", "Lina P."],
     },
   };
 
-  export const reflectionSummary =
-    "Most students identify littering and plastic as harmful; several reflections describe effects without explaining the mechanism.";
-
   // Individual reflection depth scores (1-5, matching the reflection rubric)
-  // aren't tracked per student directly — generate them deterministically from
+  // aren't tracked per student directly, so generate them deterministically from
   // each student's group assignment (which sets the plausible score range)
   // plus a per-name hash (so scores are stable across renders, not random).
   const groupScoreRanges: Record<string, [number, number]> = {
@@ -234,7 +224,7 @@
   }
 
   // Individual quiz answers, debate side, and creative-story pick aren't
-  // tracked per student either — only class-wide aggregates exist (the
+  // tracked per student either; only class-wide aggregates exist (the
   // percentages shown in Question type breakdown / Creative story). Generate
   // each student's individual results deterministically so they're stable
   // across renders and roughly consistent with those aggregate percentages,
@@ -260,7 +250,7 @@
     return creativeOptionLabels[2];
   }
 
-  // Individual quiz accuracy also isn't tracked per student — only the
+  // Individual quiz accuracy also isn't tracked per student, just the
   // class-wide per-question percentages exist (used for the aggregate bars
   // in Question type breakdown). For an individual student's 12 answers, use
   // their GROUP's known performance band instead of the class-wide numbers,
@@ -301,92 +291,92 @@
     {
       name: "Finn D.",
       group: "A",
-      summary: "Names that plastic hurts fish and turtles, but doesn't explain why or how it happens.",
-      transcript: `Sparkli: What did you learn about plastic and ocean animals today?
-Finn: plastic is bad for the fish and the turtles get stuck in bags
-Sparkli: Why do you think that happens?
-Finn: i dont know it just happens i think`,
+      summary: "Says gravity makes things fall, but describes it as pulling toward the ground rather than toward the planet's center.",
+      transcript: `Sparkli: What did you learn about gravity today?
+Finn: gravity pulls stuff down to the floor
+Sparkli: Where is it pulling things to?
+Finn: just down i think, i dont really know`,
     },
     {
       name: "Omar S.",
       group: "A",
-      summary: "Reflection is blank of real content: it just says the work was finished, with nothing about the expedition itself.",
-      transcript: `Sparkli: What did you learn about plastic and ocean animals today?
+      summary: "Reflection is blank of real content: it just says the work was finished, with nothing about gravity or mass.",
+      transcript: `Sparkli: What did you learn about gravity today?
 Omar: it was ok i finished
-Sparkli: Can you tell me one thing that happens to the animals?
+Sparkli: Can you tell me one thing about why Earth is round?
 Omar: um i dont remember`,
     },
     {
       name: "Noah R.",
       group: "B",
       summary: "Reflection doesn't mention anything from the expedition: just a brief comment that the task was done.",
-      transcript: `Sparkli: What did you learn about plastic and ocean animals today?
+      transcript: `Sparkli: What did you learn about gravity today?
 Noah: it was good i did it
-Sparkli: What happens to the animals when there is plastic in the sea?
+Sparkli: What makes a planet round instead of lumpy?
 Noah: i dont know sorry`,
     },
     {
       name: "Amara K.",
       group: "B",
-      summary: "Suggests picking up litter at the beach, but doesn't explain why it matters or what happens if it's left.",
-      transcript: `Sparkli: What did you learn about plastic and ocean animals today?
-Amara: we should pick up litter at the beach
-Sparkli: Why do you think picking up litter helps?
-Amara: because its yucky and its good to pick it up`,
+      summary: "Says heavy planets have more gravity, but doesn't explain what that gravity then does or why it makes a sphere.",
+      transcript: `Sparkli: What did you learn about gravity today?
+Amara: big heavy planets have more gravity
+Sparkli: What does that gravity actually do?
+Amara: it just pulls harder i guess`,
     },
     {
       name: "James T.",
       group: "B",
       summary: "Reflection is just two words and doesn't reference anything from the expedition.",
-      transcript: `Sparkli: What did you learn about plastic and ocean animals today?
+      transcript: `Sparkli: What did you learn about gravity today?
 James: it was fine
-Sparkli: Can you tell me anything about the animals and the plastic?
+Sparkli: Can you tell me anything about mass or why Earth is round?
 James: not really sorry`,
     },
     {
       name: "Luca B.",
       group: "C",
-      summary: "Explains that fish mistake plastic for food and get it stuck inside them, ties it to his nan's beach cleanups, and notes he hadn't realized plastic actually gets stuck inside fish before.",
-      transcript: `Sparkli: What did you learn about plastic and ocean animals today?
-Luca: the fish eat the plastic because they think its food and it gets stuck inside them and makes them really sick
-Sparkli: Have you heard about this before?
-Luca: yeah my nan does beach cleanups but i didnt know it actually got stuck inside the fish thats so sad`,
+      summary: "Explains that gravity pulls all of Earth's matter toward the center from every side, ties it to a model volcano he once built, and notes he hadn't realized solid rock could bend under that pressure.",
+      transcript: `Sparkli: What did you learn about gravity today?
+Luca: gravity pulls all the rock towards the middle of the earth from every side so it squashes into a ball
+Sparkli: Have you come across this before?
+Luca: i built a model volcano once but i didnt know the rock actually bends from the pressure thats mad`,
     },
     {
       name: "Priya N.",
       group: "C",
-      summary: "Explains how plastic breaks down and moves up the food chain from small fish to bigger ones, and reflects that she hadn't realized it could reach animals as large as whales.",
-      transcript: `Sparkli: What did you learn about plastic and ocean animals today?
-Priya: the plastic breaks into tiny tiny pieces and the small fish eat it and then bigger fish eat the small fish so the plastic goes up the whole chain
+      summary: "Explains the link between mass and gravity, more mass means a stronger inward pull, and reflects that she hadn't realized gas planets get pulled round too.",
+      transcript: `Sparkli: What did you learn about gravity today?
+Priya: the more mass something has the stronger its gravity so it pulls itself inwards into a sphere
 Sparkli: Did you know about this before?
-Priya: i knew this happened before but i didnt realise it could go all the way up to whales thats scary`,
+Priya: i knew big things had more gravity but i didnt realise even the gas planets get pulled into a ball`,
     },
     {
       name: "Yara H.",
       group: "C",
-      summary: "Explains that turtles mistake plastic bags for jellyfish and get sick from eating them, and reflects that she hadn't realized how many turtles are affected.",
-      transcript: `Sparkli: What did you learn about plastic and ocean animals today?
-Yara: sea turtles eat plastic bags because they think they look like jellyfish and it makes them really really sick
-Sparkli: Had you heard about this before?
-Yara: i saw something about this before but i didnt know how many turtles actually got hurt by it thats so sad`,
+      summary: "Explains that asteroids stay lumpy because they lack the mass for strong gravity, and reflects that she used to think every space rock was round.",
+      transcript: `Sparkli: What did you learn about gravity today?
+Yara: asteroids are lumpy because they dont have enough mass so their gravity is too weak to pull them into a ball
+Sparkli: Had you thought about this before?
+Yara: i used to think all the space rocks were round like little planets so that surprised me`,
     },
     {
       name: "Sofia M.",
       group: "D",
-      summary: "Explains how microplastics enter the water and get eaten by small fish, and notes she hadn't realized plastic could break down into pieces that small.",
-      transcript: `Sparkli: What did you learn about plastic and ocean animals today?
-Sofia: microplastics get into the water and the little fish eat them without even knowing and then they get sick
+      summary: "Explains that gravity pulls toward the center from all directions so down always points inward, but doesn't link it back to mass.",
+      transcript: `Sparkli: What did you learn about gravity today?
+Sofia: gravity pulls everything towards the centre of the earth from all directions so down always points to the middle
 Sparkli: Is there anything that surprised you?
-Sofia: i didnt know plastic could break into pieces that tiny until we learned about it today`,
+Sofia: i didnt know down meant the centre and not just towards the ground`,
     },
     {
       name: "Lina P.",
       group: "D",
-      summary: "Shares a personal observation about plastic on her local beach, but doesn't explain why it's a problem.",
-      transcript: `Sparkli: What did you learn about plastic and ocean animals today?
-Lina: my beach had lots of plastic on it
-Sparkli: Why do you think that is a problem?
-Lina: i dont know it was just there and it looked yucky`,
+      summary: "Shares that she saw a video of astronauts floating, but doesn't explain why gravity feels different there.",
+      transcript: `Sparkli: What did you learn about gravity today?
+Lina: i saw astronauts floating in a video once
+Sparkli: Why do you think gravity is different for them?
+Lina: i dont know they were just floating around`,
     },
   ].map((s) => ({
     ...s,
@@ -395,41 +385,6 @@ Lina: i dont know it was just there and it looked yucky`,
     creativeChoice: pickCreativeChoice(s.name),
     quizAnswers: computeQuizAnswers(s.name, s.group),
   }));
-
-  // Class-wide quiz stats: derived from every student's individual question
-  // results (rather than a separately hand-set number) so this can't drift
-  // out of sync with the per-student data shown in Student groups.
-  function computeClassQuizStats(roster: typeof students) {
-    const all = roster.flatMap((s) => s.quizAnswers ?? []);
-    const total = all.length || 1;
-    const correct = all.filter((a) => a.outcome === "correct").length;
-    const retry = all.filter((a) => a.outcome === "retry").length;
-    const wrong = all.filter((a) => a.outcome === "wrong").length;
-    return {
-      correctPct: Math.round((correct / total) * 100),
-      retryPct: Math.round((retry / total) * 100),
-      wrongPct: Math.round((wrong / total) * 100),
-    };
-  }
-  const classQuizStats = computeClassQuizStats(students);
-
-  export const stats = [
-    {
-      label: "Correct Answers - First Try",
-      value: `${classQuizStats.correctPct}%`,
-      tone: "success",
-    },
-    {
-      label: "Correct Answers - After Retry",
-      value: `${classQuizStats.retryPct}%`,
-      tone: "warning",
-    },
-    {
-      label: "Incorrect Answers",
-      value: `${classQuizStats.wrongPct}%`,
-      tone: "danger",
-    },
-  ];
 
   // Chip color maps to severity, not an arbitrary hue: danger (needs
   // re-teaching) > warning (needs deeper prompting) > neutral (mixed) >
@@ -518,70 +473,18 @@ Lina: i dont know it was just there and it looked yucky`,
         class="flex-1 flex items-center gap-3.5 rounded-full pl-2.5 pr-5 py-2 shadow-lg shadow-accent-200/40"
         style="background: linear-gradient(100deg, #FDE68A 0%, #F9A8D4 45%, #C4B5FD 100%);"
       >
-        <div class="w-11 h-11 rounded-full bg-white flex items-center justify-center text-xl shadow-sm shrink-0">🌿</div>
+        <div class="w-11 h-11 rounded-full bg-white flex items-center justify-center text-xl shadow-sm shrink-0">🌍</div>
         <h1 class="font-display text-lg font-bold text-violet-950">
-          Nature's Wonderful Animals
+          The Invisible Grip That Shapes Our World
         </h1>
         <span class="ml-auto shrink-0 rounded-full bg-white/70 px-3 py-1 text-xs font-bold text-violet-800">Expedition review</span>
       </div>
       <div class="flex gap-2.5 shrink-0">
-        <div class="flex items-center rounded-full border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-500 shadow-sm">Completed yesterday</div>
-        <div class="flex items-center rounded-full border-2 border-slate-900 px-4 text-sm font-bold text-slate-900" style="background: linear-gradient(120deg, #FBCFE8, #E9D5FF);">{students.length} / {students.length} students</div>
+        <div class="flex items-center rounded-full border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-500 shadow-sm">{students.length} students</div>
+        <StudentSearch {students} {groups} {debate} />
       </div>
     </header>
 
-    <MainStats {stats} />
-
-    <div class="mt-6 grid gap-4 lg:grid-cols-[1fr_3fr]">
-      <div
-        class="rounded-3xl border border-accent-100 p-5 shadow-sm text-center"
-        style="background: linear-gradient(150deg, #F5F3FF, #FCE7F3);"
-      >
-        <div class="flex h-full flex-col items-center justify-center gap-3">
-          <div>
-            <div class="text-xs font-semibold uppercase tracking-wide text-slate-500">Average reflection depth</div>
-            <div class="font-display mt-2 text-4xl font-extrabold text-accent-600">
-              {averageReflectionDepth}
-            </div>
-          </div>
-          <button
-            type="button"
-            on:click={openRubric}
-            class="rounded-full px-4 py-2 text-xs font-bold text-white shadow-md shadow-accent-300/40"
-            style="background: linear-gradient(100deg, #A855F7, #EC4899);"
-          >
-            See why this score was assigned
-          </button>
-        </div>
-      </div>
-
-      <ReflectionSummary
-        {reflectionSummary}
-        {students}
-        {rubricOpen}
-        on:closeRubric={closeRubric}
-      />
-    </div>
-
-    <!-- Question type breakdown next to Student groups -->
-    <section class="mt-6 mb-6 grid gap-6 lg:grid-cols-2">
-      <div>
-        <QuestionBreakdown
-          {questionTypes}
-          {creative}
-          {themeColors}
-          {debate}
-          {students}
-        />
-      </div>
-      <div>
-        <StudentGroups
-          {students}
-          {groups}
-          {debate}
-          {creative}
-        />
-      </div>
-    </section>
+    <ClassRoster {students} {questionTypes} {debate} />
   </div>
 </main>
