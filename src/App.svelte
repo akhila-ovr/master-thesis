@@ -293,90 +293,90 @@
       group: "A",
       summary: "Says gravity makes things fall, but describes it as pulling toward the ground rather than toward the planet's center.",
       transcript: `Sparkli: What did you learn about gravity today?
-Finn: gravity pulls stuff down to the floor
+Finn: it makes stuff fall down onto the ground
 Sparkli: Where is it pulling things to?
-Finn: just down i think, i dont really know`,
+Finn: um just down? i dont really get it`,
     },
     {
       name: "Omar S.",
       group: "A",
       summary: "Reflection is blank of real content: it just says the work was finished, with nothing about gravity or mass.",
       transcript: `Sparkli: What did you learn about gravity today?
-Omar: it was ok i finished
+Omar: it was ok i finished mine
 Sparkli: Can you tell me one thing about why Earth is round?
-Omar: um i dont remember`,
+Omar: umm i cant remember sorry`,
     },
     {
       name: "Noah R.",
       group: "B",
       summary: "Reflection doesn't mention anything from the expedition: just a brief comment that the task was done.",
       transcript: `Sparkli: What did you learn about gravity today?
-Noah: it was good i did it
+Noah: it was good i did the whole thing
 Sparkli: What makes a planet round instead of lumpy?
-Noah: i dont know sorry`,
+Noah: i dunno sorry`,
     },
     {
       name: "Amara K.",
       group: "B",
       summary: "Says heavy planets have more gravity, but doesn't explain what that gravity then does or why it makes a sphere.",
       transcript: `Sparkli: What did you learn about gravity today?
-Amara: big heavy planets have more gravity
+Amara: big heavy planets have way more gravity
 Sparkli: What does that gravity actually do?
-Amara: it just pulls harder i guess`,
+Amara: it just pulls stuff harder i think`,
     },
     {
       name: "James T.",
       group: "B",
       summary: "Reflection is just two words and doesn't reference anything from the expedition.",
       transcript: `Sparkli: What did you learn about gravity today?
-James: it was fine
+James: it was fine i guess
 Sparkli: Can you tell me anything about mass or why Earth is round?
-James: not really sorry`,
+James: nah not really sorry`,
     },
     {
       name: "Luca B.",
       group: "C",
       summary: "Explains that gravity pulls all of Earth's matter toward the center from every side, ties it to a model volcano he once built, and notes he hadn't realized solid rock could bend under that pressure.",
       transcript: `Sparkli: What did you learn about gravity today?
-Luca: gravity pulls all the rock towards the middle of the earth from every side so it squashes into a ball
+Luca: gravity pulls all the rock into the middle of the earth from every side and it squishes it into a big round ball
 Sparkli: Have you come across this before?
-Luca: i built a model volcano once but i didnt know the rock actually bends from the pressure thats mad`,
+Luca: i made a model volcano at home once and i didnt know the rock actually bends from all that squishing thats so cool`,
     },
     {
       name: "Priya N.",
       group: "C",
       summary: "Explains the link between mass and gravity, more mass means a stronger inward pull, and reflects that she hadn't realized gas planets get pulled round too.",
       transcript: `Sparkli: What did you learn about gravity today?
-Priya: the more mass something has the stronger its gravity so it pulls itself inwards into a sphere
+Priya: the more heavy a planet is the stronger its gravity gets so it pulls itself inwards and squishes into a round ball
 Sparkli: Did you know about this before?
-Priya: i knew big things had more gravity but i didnt realise even the gas planets get pulled into a ball`,
+Priya: i knew big things had more gravity but i didnt know even the puffy gas planets get pulled into a ball too`,
     },
     {
       name: "Yara H.",
       group: "C",
       summary: "Explains that asteroids stay lumpy because they lack the mass for strong gravity, and reflects that she used to think every space rock was round.",
       transcript: `Sparkli: What did you learn about gravity today?
-Yara: asteroids are lumpy because they dont have enough mass so their gravity is too weak to pull them into a ball
+Yara: asteroids stay all lumpy cause they dont have enough mass so their gravity is too weak to pull them into a ball
 Sparkli: Had you thought about this before?
-Yara: i used to think all the space rocks were round like little planets so that surprised me`,
+Yara: i used to think all the space rocks were round like tiny planets so that really surprised me`,
     },
     {
       name: "Sofia M.",
       group: "D",
       summary: "Explains that gravity pulls toward the center from all directions so down always points inward, but doesn't link it back to mass.",
       transcript: `Sparkli: What did you learn about gravity today?
-Sofia: gravity pulls everything towards the centre of the earth from all directions so down always points to the middle
+Sofia: gravity pulls everything to the middle of the earth from all the sides so down always points to the centre
 Sparkli: Is there anything that surprised you?
-Sofia: i didnt know down meant the centre and not just towards the ground`,
+Sofia: i didnt know down actually means the middle not just the floor`,
     },
     {
       name: "Lina P.",
       group: "D",
       summary: "Shares that she saw a video of astronauts floating, but doesn't explain why gravity feels different there.",
       transcript: `Sparkli: What did you learn about gravity today?
-Lina: i saw astronauts floating in a video once
+Lina: i saw a video of astronauts just floating about in space once
 Sparkli: Why do you think gravity is different for them?
-Lina: i dont know they were just floating around`,
+Lina: i dont really know they were just floating up there`,
     },
   ].map((s) => ({
     ...s,

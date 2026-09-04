@@ -13,10 +13,12 @@
     STORY_INTRO,
     STORY_JUNCTIONS,
     debatePicks,
+    debateStudentInsight,
     passedTypeOf as passed,
     quantSummaryLine,
     storyChoicesFor,
     storyGroupFor,
+    storyStudentInsight,
     studentUtterances,
   } from "./expedition";
 
@@ -49,16 +51,16 @@
     short: SHORT_LABEL[label] ?? label.replace(/\s*\(.*\)\s*$/, ""),
   }));
 
-  $: reflectionGroups = REFLECTION_CONCEPTS.map(({ key, test }) => {
+  $: reflectionGroups = REFLECTION_CONCEPTS.map(({ key, test, idea, counts }) => {
     const mentions: Array<{ name: string; quote: string }> = [];
     const missing: string[] = [];
     for (const s of students) {
       const turns = studentUtterances(s);
-      if (turns.length && test.test(turns.join(" ")))
+      if (turns.length && test(turns.join(" ")))
         mentions.push({ name: s.name, quote: turns[0] });
       else missing.push(s.name);
     }
-    return { key, mentions, missing };
+    return { key, idea, counts, mentions, missing };
   });
 
   // --- Debate -----------------------------------------------------------
@@ -68,7 +70,12 @@
 
   $: debateRows = students.map((s) => {
     const { picks, winner } = debatePicks(s, logicalSideName);
-    return { name: s.name, picks, winner };
+    return {
+      name: s.name,
+      picks,
+      winner,
+      insight: debateStudentInsight(s, logicalSideName),
+    };
   });
 
   $: debateGroups = {
@@ -83,6 +90,7 @@
     name: s.name,
     choices: storyChoicesFor(s),
     group: storyGroupFor(s),
+    insight: storyStudentInsight(s),
   }));
 
   $: storyGroups = ["Mixed", "Accuracy-first", "Practicality-first"].map(
@@ -92,7 +100,7 @@
   // --- Class-level "AI Insights", two sentences per section --------------
   $: total = students.length;
 
-  $: reflectionInsight = `The class can state that Earth is round and that gravity is involved, but few tie it to mass: ${reflectionGroups[0]?.mentions.length ?? 0}/${total} describe the pull toward a center point, ${reflectionGroups[1]?.mentions.length ?? 0}/${total} name mass as the driver, and ${reflectionGroups[2]?.mentions.length ?? 0}/${total} link low mass to why asteroids stay lumpy.`;
+  $: reflectionInsight = `The class can state that Earth is round and that gravity is involved, but few tie it to mass: ${reflectionGroups[0]?.mentions.length ?? 0}/${total} describe the pull toward a center point, ${reflectionGroups[1]?.mentions.length ?? 0}/${total} name mass as the driver, and ${reflectionGroups[2]?.mentions.length ?? 0}/${total} link the inward pull to the round shape it forms.`;
 
   $: debateInsight =
     debateGroups.Creative.length >= debateGroups.Logical.length
@@ -125,13 +133,14 @@
 </script>
 
 <div class="mt-4 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
-  <h2 class="font-display text-lg font-bold text-slate-900">Full class roster</h2>
+  <h2 class="font-display text-lg font-bold text-slate-900">Class overview</h2>
   <p class="mt-1 text-sm text-slate-500">
     Item-level exercise results, grouped by source. Search above for full detail
     on any student.
   </p>
 
-  <div class="mt-5 text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+  <section class="mt-6 rounded-2xl border border-slate-300 p-4 sm:p-5">
+  <div class="text-sm font-bold uppercase tracking-[0.2em] text-slate-600">
     Reflection
   </div>
   <p class="mt-2 text-sm text-slate-500">
@@ -142,8 +151,13 @@
   <div class="mt-4 grid gap-4 md:grid-cols-3 items-start">
     {#each reflectionGroups as g}
       <div>
-        <div class="text-sm text-slate-500">{g.key}</div>
-        <div class="mt-1.5 rounded-2xl border border-accent-100 bg-accent-50/30 p-4">
+        <div class="text-sm font-medium text-slate-700">{g.key}</div>
+        <p class="mt-0.5 text-xs text-slate-500">{g.idea}</p>
+        <p class="mt-1 text-[11px] leading-snug text-slate-400">
+          <span class="font-semibold uppercase tracking-wide">Counts when:</span>
+          {g.counts}
+        </p>
+        <div class="mt-2 rounded-2xl border border-accent-100 bg-accent-50/30 p-4">
           <div class="text-sm font-bold text-slate-900">
             Mentions this
             <span class="font-semibold text-slate-400">({g.mentions.length})</span>
@@ -181,8 +195,10 @@
     </div>
     <p class="mt-1 text-sm text-slate-600">{reflectionInsight}</p>
   </div>
+  </section>
 
-  <div class="mt-6 text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+  <section class="mt-5 rounded-2xl border border-slate-300 p-4 sm:p-5">
+  <div class="text-sm font-bold uppercase tracking-[0.2em] text-slate-600">
     Debate
   </div>
   <p class="mt-2 text-sm font-medium text-slate-700">{DEBATE_QUESTION}</p>
@@ -244,6 +260,12 @@
                       </span>
                     {/each}
                   </div>
+                  <p class="mt-1.5 text-xs leading-snug text-slate-500">
+                    <span class="font-semibold text-slate-400"
+                      >{row.insight.minutes} min ·</span
+                    >
+                    {row.insight.pattern}
+                  </p>
                 </div>
               {/each}
             </div>
@@ -261,8 +283,10 @@
     </div>
     <p class="mt-1 text-sm text-slate-600">{debateInsight}</p>
   </div>
+  </section>
 
-  <div class="mt-6 text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+  <section class="mt-5 rounded-2xl border border-slate-300 p-4 sm:p-5">
+  <div class="text-sm font-bold uppercase tracking-[0.2em] text-slate-600">
     Creative Story Builder
   </div>
   <p class="mt-2 text-sm text-slate-600">{STORY_INTRO}</p>
@@ -322,6 +346,12 @@
                       </span>
                     {/each}
                   </div>
+                  <p class="mt-1.5 text-xs leading-snug text-slate-500">
+                    <span class="font-semibold text-slate-400"
+                      >{row.insight.minutes} min ·</span
+                    >
+                    {row.insight.pattern}
+                  </p>
                 </div>
               {/each}
             </div>
@@ -339,8 +369,10 @@
     </div>
     <p class="mt-1 text-sm text-slate-600">{storyInsight}</p>
   </div>
+  </section>
 
-  <div class="mt-6 text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+  <section class="mt-5 rounded-2xl border border-slate-300 p-4 sm:p-5">
+  <div class="text-sm font-bold uppercase tracking-[0.2em] text-slate-600">
     Quantitative exercises
   </div>
 
@@ -386,7 +418,7 @@
           {#each columns as c}
             <th class="px-3 py-3 text-center font-semibold">{c.short}</th>
           {/each}
-          <th class="px-3 py-3 text-left font-semibold w-72">May know / may not know</th>
+          <th class="px-3 py-3 text-left font-semibold w-72">AI Insights</th>
         </tr>
       </thead>
       <tbody class="divide-y divide-slate-100">
@@ -427,9 +459,10 @@
       </tbody>
     </table>
   </div>
+  </section>
 
-  <div class="mt-6 border-t border-slate-100 pt-4">
-    <div class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+  <section class="mt-5 rounded-2xl border border-slate-300 p-4 sm:p-5">
+    <div class="text-sm font-bold uppercase tracking-[0.2em] text-slate-600">
       What each exercise asks
     </div>
     <dl class="mt-3 space-y-3">
@@ -444,5 +477,5 @@
         </div>
       {/each}
     </dl>
-  </div>
+  </section>
 </div>

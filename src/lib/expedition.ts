@@ -80,11 +80,43 @@ export function reflectionAnswerOf(s: Student): string {
 }
 
 // Key ideas scanned for in each reflection, matching the prompt "What did you
-// learn about gravity, mass, and why Earth is round?"
-export const REFLECTION_CONCEPTS: Array<{ key: string; test: RegExp }> = [
-  { key: "Gravity (center point)", test: /\b(middle|cent(er|re)|inwards?)\b/i },
-  { key: "Mass", test: /\b(mass|heav(y|ier)|more gravity)\b/i },
-  { key: "Asteroids (low mass)", test: /asteroid/i },
+// learn about gravity, mass, and why Earth is round?". Each `test` fires only
+// when the student expresses the relationship in their own words, never on the
+// bare term: saying "gravity", "mass" or "round" on its own counts for nothing.
+// `idea` names the concept; `counts` says what phrasing trips `test` (and what
+// does not), so a teacher can see why a reflection did or didn't get credit.
+export const REFLECTION_CONCEPTS: Array<{
+  key: string;
+  test: (t: string) => boolean;
+  idea: string;
+  counts: string;
+}> = [
+  {
+    key: "Gravity (center point)",
+    test: (t) => /\b(middle|cent(er|re)|inwards?)\b/i.test(t),
+    idea: 'Gravity pulls matter toward the center, so "down" everywhere points inward.',
+    counts:
+      'The student places the pull toward the middle or center, or describes matter being pulled inward. Saying only "gravity", or "pulls things down", does not count.',
+  },
+  {
+    key: "Mass",
+    test: (t) =>
+      /\b(mass|matter|heav|weigh)/i.test(t) &&
+      /\b(more|strong|weak|less|enough)/i.test(t) &&
+      /\b(gravity|pull|force)/i.test(t),
+    idea: "The more mass an object has, the stronger its gravity.",
+    counts:
+      'The student links a mass or weight word to a stronger or weaker pull ("heavier planets have more gravity", "not enough mass so its gravity is too weak"). Naming "mass" on its own does not count.',
+  },
+  {
+    key: "Round shape (sphere)",
+    test: (t) =>
+      /\b(sphere|spherical|round|ball)\b/i.test(t) &&
+      /\b(pull|squash|squeez|squish|form|make|made|becom)/i.test(t),
+    idea: "Gravity pulling inward from every direction squashes a large body into a sphere.",
+    counts:
+      'The student ties the round shape to the pull that forms it ("pulled into a ball", "squashes into a sphere"). Saying "the Earth is round" without the cause does not count.',
+  },
 ];
 
 // ---------------------------------------------------------------------------
@@ -149,7 +181,7 @@ export function debatePicks(
 // ---------------------------------------------------------------------------
 
 export const STORY_INTRO =
-  "Maya and Leo are building a gravity model for a science fair. At each of three junctions, one option stays truer to the physics (accuracy-first) and the other is easier to build or show to a crowd (practicality-first).";
+  "Maya and Leo are building a gravity model for a science fair. At each of three junctions, one option stays truer to the physics but takes more work to build right (accuracy-first), and the other is quicker and easier to build but less true to the physics (practicality-first).";
 
 export const STORY_JUNCTIONS = [
   {
@@ -165,12 +197,12 @@ export const STORY_JUNCTIONS = [
   {
     n: 2,
     topic: "Display size",
-    accurate: "Small display",
+    accurate: "Large display",
     accurateWhy:
-      "Easier to build level and precise, so the pull-to-center effect stays clean and repeatable.",
-    practical: "Large display",
+      "A wide surface gives the pull room to build, so marbles curve inward gradually the way matter really falls toward a mass. Takes the extra work of keeping a big surface round, level and steady.",
+    practical: "Small display",
     practicalWhy:
-      "Eye-catching for a fair crowd, but harder to keep flat and true, so wobble and uneven surfaces muddy the result.",
+      "Quick to build and it stays stable on its own, but the cramped surface just drops marbles straight to the middle, hiding the gradual pull.",
   },
   {
     n: 3,
@@ -216,6 +248,31 @@ export function storyInterpretation(s: Student): string {
   if (acc === 2)
     return "This student mostly favors scientific accuracy, trading one choice for a model that is easier to build or show off.";
   return "This student mostly favors a buildable, eye-catching model, keeping one choice that stays true to the physics.";
+}
+
+// Per-student story read for the class overview: a synthetic time on task
+// (derived deterministically from the name, like the choices themselves) plus
+// a plain description of how the three junction choices split.
+export function storyStudentInsight(s: Student): {
+  minutes: number;
+  pattern: string;
+} {
+  const choices = storyChoicesFor(s);
+  const accN = choices.filter((c) => c.accurate).length;
+  const minutes = 3 + (hashOf(s.name + "|story-minutes") % 8); // 3-10 min
+  let pattern: string;
+  if (accN === 3) {
+    pattern = "Chose the accurate build at every junction.";
+  } else if (accN === 0) {
+    pattern = "Chose the easier build at every junction.";
+  } else if (accN === 2) {
+    const traded = choices.find((c) => !c.accurate);
+    pattern = `Accuracy-first, trading one choice (${traded?.topic.toLowerCase()}) for the easier build.`;
+  } else {
+    const kept = choices.find((c) => c.accurate);
+    pattern = `Practicality-first, staying accurate only for ${kept?.topic.toLowerCase()}.`;
+  }
+  return { minutes, pattern };
 }
 
 // ---------------------------------------------------------------------------
@@ -317,7 +374,7 @@ export function reflectionConceptsFor(s: Student): {
   const mentioned: string[] = [];
   const missing: string[] = [];
   for (const c of REFLECTION_CONCEPTS) {
-    if (turns.length && c.test.test(text)) mentioned.push(c.key);
+    if (turns.length && c.test(text)) mentioned.push(c.key);
     else missing.push(c.key);
   }
   return { mentioned, missing };
@@ -326,7 +383,7 @@ export function reflectionConceptsFor(s: Student): {
 export function reflectionSummaryText(s: Student): string {
   const { mentioned, missing } = reflectionConceptsFor(s);
   if (!mentioned.length)
-    return "The reflection names none of the three key ideas: the pull toward a center point, mass as the driver, or why low-mass asteroids stay lumpy.";
+    return "The reflection names none of the three key ideas: the pull toward a center point, mass as the driver, or the inward pull forming a sphere.";
   const covered = `The reflection covers ${joinList(mentioned.map((m) => m.toLowerCase()))}`;
   return missing.length
     ? `${covered}, but not ${joinList(missing.map((m) => m.toLowerCase()))}.`
@@ -348,4 +405,28 @@ export function debateSummaryText(
       ? "and leans on the mass-based test (enough mass, so gravity pulls it round) as the deciding rule."
       : "and is moved more by the fairness and discovery case than by the physical definition of a planet.";
   return `${consistency} ${takeaway}`;
+}
+
+// Per-student debate read for the class overview: a synthetic time on task
+// (this mock stores no real timings, so it is derived deterministically from
+// the name like the scores and picks) plus a plain description of how the
+// three round picks moved.
+export function debateStudentInsight(
+  s: Student,
+  logicalSideName: string | undefined,
+): { minutes: number; pattern: string } {
+  const { picks, winner } = debatePicks(s, logicalSideName);
+  const minutes = 3 + (hashOf(s.name + "|debate-minutes") % 7); // 3-9 min
+  const switches = picks.filter((p, i) => i > 0 && p !== picks[i - 1]).length;
+  let pattern: string;
+  if (switches === 0) {
+    pattern = `Held ${winner} across all three rounds, a firm and settled position.`;
+  } else if (switches === 1) {
+    const flipRound =
+      picks.findIndex((p, i) => i > 0 && p !== picks[i - 1]) + 1;
+    pattern = `Changed side once, in round ${flipRound}; landed on ${winner} by a 2-1 split.`;
+  } else {
+    pattern = `Switched side every round; landed on ${winner} 2-1 but never settled.`;
+  }
+  return { minutes, pattern };
 }
