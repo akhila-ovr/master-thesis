@@ -3,7 +3,7 @@
      currently rendered; the rest of the dashboard is being rebuilt. -->
 <script lang="ts">
   import StudentSearch from "./lib/StudentSearch.svelte";
-  import ClassRoster from "./lib/ClassRoster.svelte";
+  import ClassOverview from "./lib/ClassOverview.svelte";
 
   export const questionTypes = [
     {
@@ -485,6 +485,6 @@ Lina: i dont know they were just floating around`,
       </div>
     </header>
 
-    <ClassRoster {students} {questionTypes} {debate} />
+    <ClassOverview {students} {questionTypes} {debate} />
   </div>
 </main>

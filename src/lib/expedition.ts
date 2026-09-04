@@ -27,27 +27,27 @@ export const QUESTION_GUIDE = [
   {
     label: "Multi-choice",
     typeLabel: "Multiple choice (4 questions)",
-    text: 'Multiple choice: "Which statement best describes how Earth’s gravity works?" (Correct: gravity pulls all matter inward toward the center core of the planet.)',
+    text: '"Which statement best describes how Earth’s gravity works?"',
   },
   {
     label: "Fill-in-blank",
     typeLabel: "Fill in blanks (2 questions)",
-    text: 'Fill in the blank: "Everything you can touch and see is made of ___. Because Earth is so massive, its ___ pulls all of this material inward, toward the ___ of the planet." (matter / gravity / core)',
+    text: '"Everything you can touch and see is made of ___. Because Earth is so massive, its ___ pulls all of this material inward, toward the ___ of the planet."',
   },
   {
     label: "Sorting",
     typeLabel: "Sorting (1 question)",
-    text: "Sorting: which space objects have enough mass to form a round ball? (round: Earth, a giant gas planet; irregular: a flying space rock, a tiny asteroid, a kitchen table)",
+    text: "Which space objects have enough mass to form a round ball?",
   },
   {
     label: "True/false",
     typeLabel: "True / False (3 questions)",
-    text: 'True or false: "Asteroids will eventually turn into perfectly round spheres if they float in space long enough." (Answer: False)',
+    text: '"Asteroids will eventually turn into perfectly round spheres if they float in space long enough."',
   },
   {
     label: "Drag-drop",
     typeLabel: "Drag & drop (2 questions)",
-    text: "Drag and drop: match each gravity cause to its effect (e.g. gathering huge amounts of matter → increases gravitational pull; lacking enough mass → results in a lumpy object).",
+    text: "Match each gravity cause to its effect.",
   },
 ];
 
@@ -80,11 +80,43 @@ export function reflectionAnswerOf(s: Student): string {
 }
 
 // Key ideas scanned for in each reflection, matching the prompt "What did you
-// learn about gravity, mass, and why Earth is round?"
-export const REFLECTION_CONCEPTS: Array<{ key: string; test: RegExp }> = [
-  { key: "Gravity (center point)", test: /\b(middle|cent(er|re)|inwards?)\b/i },
-  { key: "Mass", test: /\b(mass|heav(y|ier)|more gravity)\b/i },
-  { key: "Asteroids (low mass)", test: /asteroid/i },
+// learn about gravity, mass, and why Earth is round?". Each `test` fires only
+// when the student expresses the relationship in their own words, never on the
+// bare term: saying "gravity", "mass" or "round" on its own counts for nothing.
+// `idea` names the concept; `counts` says what phrasing trips `test` (and what
+// does not), so a teacher can see why a reflection did or didn't get credit.
+export const REFLECTION_CONCEPTS: Array<{
+  key: string;
+  test: (t: string) => boolean;
+  idea: string;
+  counts: string;
+}> = [
+  {
+    key: "Gravity (center point)",
+    test: (t) => /\b(middle|cent(er|re)|inwards?)\b/i.test(t),
+    idea: 'Gravity pulls matter toward the center, so "down" everywhere points inward.',
+    counts:
+      'The student places the pull toward the middle or center, or describes matter being pulled inward. Saying only "gravity", or "pulls things down", does not count.',
+  },
+  {
+    key: "Mass",
+    test: (t) =>
+      /\b(mass|matter|heav|weigh)/i.test(t) &&
+      /\b(more|strong|weak|less|enough)/i.test(t) &&
+      /\b(gravity|pull|force)/i.test(t),
+    idea: "The more mass an object has, the stronger its gravity.",
+    counts:
+      'The student links a mass or weight word to a stronger or weaker pull ("heavier planets have more gravity", "not enough mass so its gravity is too weak"). Naming "mass" on its own does not count.',
+  },
+  {
+    key: "Round shape (sphere)",
+    test: (t) =>
+      /\b(sphere|spherical|round|ball)\b/i.test(t) &&
+      /\b(pull|squash|squeez|squish|form|make|made|becom)/i.test(t),
+    idea: "Gravity pulling inward from every direction squashes a large body into a sphere.",
+    counts:
+      'The student ties the round shape to the pull that forms it ("pulled into a ball", "squashes into a sphere"). Saying "the Earth is round" without the cause does not count.',
+  },
 ];
 
 // ---------------------------------------------------------------------------
@@ -149,7 +181,7 @@ export function debatePicks(
 // ---------------------------------------------------------------------------
 
 export const STORY_INTRO =
-  "Maya and Leo are building a gravity model for a science fair. At each of three junctions, one option stays truer to the physics (accuracy-first) and the other is easier to build or show to a crowd (practicality-first).";
+  "Maya and Leo are building a gravity model for a science fair. At each of three junctions, one option stays truer to the physics but takes more work to build right (accuracy-first), and the other is quicker and easier to build but less true to the physics (practicality-first).";
 
 export const STORY_JUNCTIONS = [
   {
@@ -165,12 +197,12 @@ export const STORY_JUNCTIONS = [
   {
     n: 2,
     topic: "Display size",
-    accurate: "Small display",
+    accurate: "Large display",
     accurateWhy:
-      "Easier to build level and precise, so the pull-to-center effect stays clean and repeatable.",
-    practical: "Large display",
+      "A wide surface gives the pull room to build, so marbles curve inward gradually the way matter really falls toward a mass. Takes the extra work of keeping a big surface round, level and steady.",
+    practical: "Small display",
     practicalWhy:
-      "Eye-catching for a fair crowd, but harder to keep flat and true, so wobble and uneven surfaces muddy the result.",
+      "Quick to build and it stays stable on its own, but the cramped surface just drops marbles straight to the middle, hiding the gradual pull.",
   },
   {
     n: 3,
@@ -317,7 +349,7 @@ export function reflectionConceptsFor(s: Student): {
   const mentioned: string[] = [];
   const missing: string[] = [];
   for (const c of REFLECTION_CONCEPTS) {
-    if (turns.length && c.test.test(text)) mentioned.push(c.key);
+    if (turns.length && c.test(text)) mentioned.push(c.key);
     else missing.push(c.key);
   }
   return { mentioned, missing };
@@ -326,7 +358,7 @@ export function reflectionConceptsFor(s: Student): {
 export function reflectionSummaryText(s: Student): string {
   const { mentioned, missing } = reflectionConceptsFor(s);
   if (!mentioned.length)
-    return "The reflection names none of the three key ideas: the pull toward a center point, mass as the driver, or why low-mass asteroids stay lumpy.";
+    return "The reflection names none of the three key ideas: the pull toward a center point, mass as the driver, or the inward pull forming a sphere.";
   const covered = `The reflection covers ${joinList(mentioned.map((m) => m.toLowerCase()))}`;
   return missing.length
     ? `${covered}, but not ${joinList(missing.map((m) => m.toLowerCase()))}.`
