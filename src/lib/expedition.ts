@@ -326,18 +326,16 @@ export function quantSummaryLine(s: Student): string {
   return `Solid on ${known[0]}; shaky on ${gaps[0]}.`;
 }
 
-// Fuller prose for the individual student view.
+// Fuller prose for the individual student view. The tile headline already
+// shows the pass count, so this leads straight into what landed and what didn't.
 export function quantSummaryText(s: Student): string {
   const { known, gaps } = quantConceptsFor(s);
-  const passed = QUESTION_GUIDE.filter(
-    (q) => passedTypeOf(s, q.typeLabel) === true,
-  ).length;
   if (!known.length && !gaps.length) return "No quiz answers recorded yet.";
   if (!gaps.length)
-    return `Passed all five exercise types. This student is comfortable with ${joinList(known)}.`;
+    return `Comfortable across every exercise type, solid on ${joinList(known)}.`;
   if (!known.length)
-    return "Missed every exercise type. The core idea that mass creates the gravity which pulls matter into a sphere is not landing yet.";
-  return `Passed ${passed} of five exercise types. Solid on ${joinList(known)}, but still shaky on ${joinList(gaps)}.`;
+    return "The core idea that mass creates the gravity which pulls matter into a sphere is not landing yet.";
+  return `Solid on ${joinList(known)}, but still shaky on ${joinList(gaps)}.`;
 }
 
 export function reflectionConceptsFor(s: Student): {
