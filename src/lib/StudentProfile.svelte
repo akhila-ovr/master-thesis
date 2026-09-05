@@ -12,31 +12,27 @@
     QUESTION_GUIDE,
     REFLECTION_PROMPT,
     STORY_INTRO,
-    STORY_JUNCTIONS,
     debatePicks,
+    debateRoundMinutes,
     debateSummaryText,
-    passedTypeOf,
     quantSummaryText,
+    quizPartsFor,
+    quizRetriesFor,
     reflectionAnswerOf,
+    reflectionMinutesFor,
     reflectionSummaryText,
-    storyChoicesFor,
     storyInterpretation,
+    storyPathFor,
+    TYPE_UNIT_LABEL,
   } from "./expedition";
 
   export let student: Student;
   export let debate: any = {};
-  export let groups: Array<{
-    id: string;
-    label: string;
-    chipTextClass?: string;
-    chipBgClass?: string;
-  }> = [];
 
   $: avatar = avatarFor(student?.name ?? "");
-  $: groupMeta = groups.find((g) => g.id === student?.group);
   $: logicalSideName = debate?.right?.name;
   $: debateResult = debatePicks(student, logicalSideName);
-  $: storyChoices = storyChoicesFor(student);
+  $: storyPath = storyPathFor(student);
   $: reflectionAnswer = reflectionAnswerOf(student);
 </script>
 
@@ -48,39 +44,44 @@
   </div>
   <div>
     <div class="font-display text-lg font-bold text-slate-900">{student.name}</div>
-    {#if groupMeta}
-      <div
-        class="mt-1 inline-block rounded-full px-2.5 py-0.5 text-xs font-bold {groupMeta.chipTextClass} {groupMeta.chipBgClass}"
-      >
-        {groupMeta.label}
-      </div>
-    {/if}
   </div>
 </div>
 
-<!-- Quantitative exercises -->
+<!-- Quiz results -->
 <section class="mt-6">
   <h3 class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
-    Quantitative exercises
+    Quiz results
   </h3>
   <ul class="mt-3 space-y-2">
     {#each QUESTION_GUIDE as q}
-      {@const ok = passedTypeOf(student, q.typeLabel)}
+      {@const p = quizPartsFor(student, q.typeLabel)}
+      {@const retries = quizRetriesFor(student, q.typeLabel)}
       <li class="flex items-start gap-2 text-sm text-slate-600">
-        {#if ok === null}
+        {#if !p}
           <span class="mt-0.5 text-slate-300 shrink-0">–</span>
-        {:else if ok}
-          <span
-            class="mt-0.5 inline-flex h-5 w-5 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 text-xs shrink-0"
-            >✓</span
-          >
+          <span>{q.text}</span>
         {:else}
-          <span
-            class="mt-0.5 inline-flex h-5 w-5 items-center justify-center rounded-full bg-rose-100 text-rose-500 text-xs shrink-0"
-            >✕</span
-          >
+          <span class="mt-0.5 shrink-0 whitespace-nowrap">
+            <span
+              class="inline-flex h-5 min-w-5 items-center justify-center rounded-full px-1 text-xs font-bold {p.correct ===
+              p.total
+                ? 'bg-emerald-100 text-emerald-700'
+                : p.correct === 0
+                  ? 'bg-rose-100 text-rose-600'
+                  : 'bg-amber-100 text-amber-700'}"
+              >{p.correct}/{p.total}</span
+            >
+            {#if retries}
+              <div class="mt-0.5 text-[9px] text-slate-400">
+                after {retries} {retries === 1 ? "retry" : "retries"}
+              </div>
+            {/if}
+          </span>
+          <span>
+            {q.text}
+            <span class="text-xs text-slate-400">({TYPE_UNIT_LABEL[q.typeLabel]})</span>
+          </span>
         {/if}
-        <span>{q.text}</span>
       </li>
     {/each}
   </ul>
@@ -98,6 +99,7 @@
     Reflection
   </h3>
   <p class="mt-3 text-sm text-slate-500">{REFLECTION_PROMPT}</p>
+  <p class="mt-1 text-xs text-slate-400">{reflectionMinutesFor(student)} min spent on this reflection</p>
   {#if reflectionAnswer}
     <p class="mt-2 text-sm italic text-slate-700">"{reflectionAnswer}"</p>
   {:else}
@@ -138,8 +140,13 @@
     {#each DEBATE_ROUNDS as r, i}
       {@const pick = debateResult.picks[i]}
       <div class="rounded-xl border border-slate-200 p-3">
-        <div class="text-xs font-bold uppercase tracking-wide text-slate-500">
-          Round {r.n}
+        <div class="flex items-center justify-between gap-2">
+          <span class="text-xs font-bold uppercase tracking-wide text-slate-500">
+            Round {r.n}
+          </span>
+          <span class="text-xs font-semibold text-slate-400">
+            {debateRoundMinutes(student, r.n)} min
+          </span>
         </div>
         <p class="mt-1.5 text-sm text-slate-600">
           <span class="font-semibold text-slate-700">Creative:</span>
@@ -193,48 +200,29 @@
   </h3>
   <p class="mt-3 text-sm text-slate-500">{STORY_INTRO}</p>
 
-  <div class="mt-3 grid gap-3 sm:grid-cols-3">
-    {#each STORY_JUNCTIONS as j}
-      {@const chosen = storyChoices.find((c) => c.n === j.n)?.choice}
+  <div class="mt-3 space-y-3">
+    {#each storyPath as step, i}
       <div class="rounded-xl border border-slate-200 p-3">
         <div class="text-xs font-bold uppercase tracking-wide text-slate-500">
-          Junction {j.n}: {j.topic}
+          Step {i + 1}
         </div>
+        <p class="mt-1 text-sm font-medium text-slate-700">{step.question}</p>
         <div class="mt-2 space-y-2">
-          <div
-            class="rounded-lg p-2 {chosen === j.accurate
-              ? 'bg-emerald-50 ring-1 ring-emerald-200'
-              : 'opacity-60'}"
-          >
-            <div class="flex flex-wrap items-center gap-1.5">
-              <span
-                class="rounded-full bg-emerald-100 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-emerald-700"
-                >Accuracy</span
-              >
-              <span class="text-sm font-semibold text-slate-800">{j.accurate}</span>
-              {#if chosen === j.accurate}
-                <span class="text-xs font-bold text-emerald-600">✓ chose this</span>
-              {/if}
+          {#each step.options as opt}
+            <div
+              class="rounded-lg p-2 {opt.key === step.chosenKey
+                ? 'bg-emerald-50 ring-1 ring-emerald-200'
+                : 'opacity-60'}"
+            >
+              <div class="flex flex-wrap items-center gap-1.5">
+                <span class="text-sm font-semibold text-slate-800">{opt.label}</span>
+                {#if opt.key === step.chosenKey}
+                  <span class="text-xs font-bold text-emerald-600">✓ chose this</span>
+                {/if}
+              </div>
+              <p class="mt-0.5 text-xs text-slate-500">{opt.result}</p>
             </div>
-            <p class="mt-0.5 text-xs text-slate-500">{j.accurateWhy}</p>
-          </div>
-          <div
-            class="rounded-lg p-2 {chosen === j.practical
-              ? 'bg-amber-50 ring-1 ring-amber-200'
-              : 'opacity-60'}"
-          >
-            <div class="flex flex-wrap items-center gap-1.5">
-              <span
-                class="rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-amber-700"
-                >Practicality</span
-              >
-              <span class="text-sm font-semibold text-slate-800">{j.practical}</span>
-              {#if chosen === j.practical}
-                <span class="text-xs font-bold text-amber-600">✓ chose this</span>
-              {/if}
-            </div>
-            <p class="mt-0.5 text-xs text-slate-500">{j.practicalWhy}</p>
-          </div>
+          {/each}
         </div>
       </div>
     {/each}

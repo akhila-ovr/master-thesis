@@ -7,21 +7,9 @@
 
   export const questionTypes = [
     {
-      label: "True / False (3 questions)",
-      parts: [55, 25, 20],
+      label: "True / False (1 question)",
+      parts: [31, 34, 35],
       questions: [
-        {
-          parts: [62, 20, 18],
-          question: "Gravity pulls matter toward a central point.",
-          options: ["True", "False"],
-          answer: "True",
-        },
-        {
-          parts: [57, 25, 18],
-          question: "Every object with mass has its own gravitational pull.",
-          options: ["True", "False"],
-          answer: "True",
-        },
         {
           parts: [31, 34, 35],
           question:
@@ -32,8 +20,8 @@
       ],
     },
     {
-      label: "Multiple choice (4 questions)",
-      parts: [70, 20, 10],
+      label: "Multiple choice (1 question)",
+      parts: [78, 15, 7],
       questions: [
         {
           parts: [78, 15, 7],
@@ -47,39 +35,10 @@
           answer:
             "Gravity pulls all matter inward toward the center core of the planet",
         },
-        {
-          parts: [65, 20, 15],
-          question: "About how far down is the center of the Earth?",
-          options: [
-            "About 40 miles",
-            "About 400 miles",
-            "About 4,000 miles",
-            "About 40,000 miles",
-          ],
-          answer: "About 4,000 miles",
-        },
-        {
-          parts: [70, 18, 12],
-          question: "What is the total amount of matter inside an object called?",
-          options: ["Mass", "Weight", "Volume", "Speed"],
-          answer: "Mass",
-        },
-        {
-          parts: [67, 27, 6],
-          question: "Why does an asteroid stay lumpy instead of becoming a sphere?",
-          options: [
-            "It is too cold to change shape",
-            "It spins around too fast",
-            "It does not have enough mass for a strong gravitational pull",
-            "It is made entirely of ice",
-          ],
-          answer:
-            "It does not have enough mass for a strong gravitational pull",
-        },
       ],
     },
     {
-      label: "Fill in blanks (2 questions)",
+      label: "Fill in blanks (1 question)",
       parts: [58, 28, 14],
       questions: [
         {
@@ -98,7 +57,7 @@
       ],
     },
     {
-      label: "Drag & drop (2 questions)",
+      label: "Drag & drop (1 question)",
       parts: [72, 20, 8],
       questions: [
         {
@@ -140,7 +99,7 @@
     },
   ];
 
-  // assign (randomized) labels Q1..Q12 to questions
+  // assign (randomized) labels Q1..Q7 to questions
   function shuffle<T>(arr: T[]) {
     for (let i = arr.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
@@ -148,7 +107,7 @@
     }
     return arr;
   }
-  const qNums = shuffle(Array.from({ length: 12 }, (_, i) => i + 1));
+  const qNums = shuffle(Array.from({ length: 7 }, (_, i) => i + 1));
   for (const qt of questionTypes) {
     for (const qq of qt.questions) {
       (qq as any).label = `Q${qNums.shift()}`;
@@ -275,16 +234,63 @@
     return "wrong";
   }
 
+  // A question with n gradable units can't have all n need a retry (that's
+  // indistinguishable from just not knowing it), and retries are capped at 2
+  // regardless of n. Excess "retry" rolls become "correct" instead -- still
+  // right, just not flagged as having needed a retry.
+  function capRetries(
+    outcomes: Array<"correct" | "retry" | "wrong">,
+  ): Array<"correct" | "retry" | "wrong"> {
+    const maxRetries = Math.min(outcomes.length - 1, 2);
+    const retryIdx = outcomes.reduce<number[]>(
+      (idx, o, i) => (o === "retry" ? [...idx, i] : idx),
+      [],
+    );
+    for (const i of retryIdx.slice(maxRetries)) outcomes[i] = "correct";
+    return outcomes;
+  }
+
+  // Fill-in-blank, drag & drop, and sorting each grade several sub-parts
+  // within their question(s) (blanks / matches / items), unlike multiple
+  // choice and true/false which are one-right-answer-per-question. Roll each
+  // sub-part independently (same per-student accuracy band) so a student can
+  // land partway between fully right and fully wrong, e.g. 2/3 blanks.
+  const TYPE_TOTAL_PARTS: Record<string, number> = {
+    "Fill in blanks (1 question)": 3,
+    "Drag & drop (1 question)": 4,
+    "Sorting (1 question)": 5,
+  };
+
   function computeQuizAnswers(name: string, group: string) {
     const parts = groupQuizParts[group] ?? [40, 30, 30];
-    return questionTypes.flatMap((qt: any) =>
-      qt.questions.map((q: any) => ({
+    return questionTypes.flatMap((qt: any) => {
+      const totalParts = TYPE_TOTAL_PARTS[qt.label as string];
+      if (totalParts) {
+        const units = capRetries(
+          Array.from({ length: totalParts }, (_, i) =>
+            pickOutcome(name, `${qt.label}-part-${i}`, parts),
+          ),
+        );
+        return [
+          {
+            typeLabel: qt.label as string,
+            qLabel: qt.label as string,
+            question: qt.questions.map((q: any) => q.question).join(" "),
+            outcome: units.every((o) => o !== "wrong") ? "correct" : "wrong",
+            units,
+          },
+        ];
+      }
+      const outcomes = capRetries(
+        qt.questions.map((q: any) => pickOutcome(name, `${q.label}-${q.question}`, parts)),
+      );
+      return qt.questions.map((q: any, i: number) => ({
         typeLabel: qt.label as string,
         qLabel: q.label as string,
         question: (q.question as string) ?? "",
-        outcome: pickOutcome(name, `${q.label}-${q.question}`, parts),
-      })),
-    );
+        outcome: outcomes[i],
+      }));
+    });
   }
 
   export const students = [
@@ -475,7 +481,7 @@ Lina: i dont really know they were just floating up there`,
       >
         <div class="w-11 h-11 rounded-full bg-white flex items-center justify-center text-xl shadow-sm shrink-0">🌍</div>
         <h1 class="font-display text-lg font-bold text-violet-950">
-          The Invisible Grip That Shapes Our World
+          Why is the Earth round?
         </h1>
         <span class="ml-auto shrink-0 rounded-full bg-white/70 px-3 py-1 text-xs font-bold text-violet-800">Expedition review</span>
       </div>

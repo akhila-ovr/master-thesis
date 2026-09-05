@@ -8,7 +8,14 @@ export interface QuizAnswer {
   typeLabel: string;
   qLabel: string;
   question: string;
+  // For multi-choice/true-false, this one QuizAnswer entry IS a single
+  // gradable question, so `outcome` alone is its result (always x/1: one
+  // right answer). Fill-in-blank/drag & drop/sorting instead grade several
+  // sub-parts within their question(s) -- blanks, matches, items -- so
+  // `units` carries one outcome per sub-part (each still individually x/1)
+  // and `outcome` is just their overall correct-only-if-all-correct summary.
   outcome: Outcome;
+  units?: Outcome[];
 }
 
 export interface Student {
@@ -50,12 +57,17 @@ export const outcomeStyle: Record<Outcome, { label: string; classes: string }> =
   wrong: { label: "Incorrect", classes: "bg-rose-100 text-rose-700" },
 };
 
-export function quizStats(quizAnswers?: Array<{ outcome: string }>) {
+export function quizStats(quizAnswers?: Array<{ outcome: Outcome; units?: Outcome[] }>) {
   if (!quizAnswers || quizAnswers.length === 0) return null;
-  const total = quizAnswers.length;
-  const correct = quizAnswers.filter((q) => q.outcome === "correct").length;
-  const retry = quizAnswers.filter((q) => q.outcome === "retry").length;
-  const wrong = quizAnswers.filter((q) => q.outcome === "wrong").length;
+  // Expand each entry to its individual gradable units (fill-in-blank/
+  // drag & drop/sorting have several; multi-choice/true-false have exactly
+  // one, themselves) so a partially-right multi-part question doesn't count
+  // the same as one fully right or fully wrong question.
+  const units = quizAnswers.flatMap((q) => q.units ?? [q.outcome]);
+  const total = units.length;
+  const correct = units.filter((o) => o === "correct").length;
+  const retry = units.filter((o) => o === "retry").length;
+  const wrong = units.filter((o) => o === "wrong").length;
   return {
     correctPct: Math.round((correct / total) * 100),
     retryPct: Math.round((retry / total) * 100),

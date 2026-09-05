@@ -6,7 +6,7 @@
   import { avatarFor } from "./studentHelpers";
 
   export let students: Array<any> = [];
-  export let groups: Array<any> = [];
+  export const groups: Array<any> = []; // accepted for API compat; not shown (StudentProfile dropped the group chip)
   export let debate: any = {};
 
   let query = "";
@@ -120,7 +120,7 @@
         </div>
       </div>
       <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-        <StudentProfile student={selected} {debate} {groups} />
+        <StudentProfile student={selected} {debate} />
       </div>
     </div>
   </div>
