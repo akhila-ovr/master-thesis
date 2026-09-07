@@ -99,18 +99,12 @@
     },
   ];
 
-  // assign (randomized) labels Q1..Q7 to questions
-  function shuffle<T>(arr: T[]) {
-    for (let i = arr.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [arr[i], arr[j]] = [arr[j], arr[i]];
-    }
-    return arr;
-  }
-  const qNums = shuffle(Array.from({ length: 7 }, (_, i) => i + 1));
+  // assign labels Q1..Q7 to questions in declaration order (kept stable so
+  // every derived result below is fully deterministic across reloads)
+  let qNum = 1;
   for (const qt of questionTypes) {
     for (const qq of qt.questions) {
-      (qq as any).label = `Q${qNums.shift()}`;
+      (qq as any).label = `Q${qNum++}`;
     }
   }
 
@@ -216,7 +210,7 @@
   // so a Group A student (quiz score below 55%) actually shows mostly wrong
   // answers rather than drifting toward the class average.
   const groupQuizParts: Record<string, [number, number, number]> = {
-    A: [20, 25, 55], // below 55% combined correct
+    A: [5, 5, 90], // almost everything wrong (error group: bad scores)
     B: [55, 30, 15], // 80%+ combined correct
     C: [60, 30, 10], // scored well, slightly ahead of B
     D: [35, 30, 35], // mixed
@@ -314,12 +308,12 @@ Omar: umm i cant remember sorry`,
     },
     {
       name: "Noah R.",
-      group: "B",
-      summary: "Reflection doesn't mention anything from the expedition: just a brief comment that the task was done.",
+      group: "A",
+      summary: "Two misconceptions in the reflection: calls gravity the air pushing down, and thinks Earth is round because it spins fast. Nothing about the pull toward the center or the role of mass, and exercise scores are low across the board.",
       transcript: `Sparkli: What did you learn about gravity today?
-Noah: it was good i did the whole thing
+Noah: gravity is the air pushing down on us and that holds everything on the ground
 Sparkli: What makes a planet round instead of lumpy?
-Noah: i dunno sorry`,
+Noah: i think the earth spins really fast so it goes round`,
     },
     {
       name: "Amara K.",
@@ -333,11 +327,11 @@ Amara: it just pulls stuff harder i think`,
     {
       name: "James T.",
       group: "B",
-      summary: "Reflection is just two words and doesn't reference anything from the expedition.",
+      summary: "Uses the right words at a high level, gravity is an important force for planets and space, but nothing specific from the expedition: no mention of the pull toward the center, mass, or what makes a body round. Exercise scores are strong.",
       transcript: `Sparkli: What did you learn about gravity today?
-James: it was fine i guess
+James: i learned gravity is a really important force for planets and space
 Sparkli: Can you tell me anything about mass or why Earth is round?
-James: nah not really sorry`,
+James: we did loads about how gravity works, it was pretty interesting`,
     },
     {
       name: "Luca B.",
@@ -351,9 +345,9 @@ Luca: i made a model volcano at home once and i didnt know the rock actually ben
     {
       name: "Priya N.",
       group: "C",
-      summary: "Explains the link between mass and gravity, more mass means a stronger inward pull, and reflects that she hadn't realized gas planets get pulled round too.",
+      summary: "A thorough explanation of mass driving the inward pull that squashes a body into a sphere, but with one slip: she thinks small asteroids will round out too if given enough time, when it is mass, not time, that does it.",
       transcript: `Sparkli: What did you learn about gravity today?
-Priya: the more heavy a planet is the stronger its gravity gets so it pulls itself inwards and squishes into a round ball
+Priya: the more heavy a planet is the stronger its gravity gets so it pulls itself inwards and squishes into a round ball, and i think even small asteroids will slowly get pulled round too if theyre floating out there long enough
 Sparkli: Did you know about this before?
 Priya: i knew big things had more gravity but i didnt know even the puffy gas planets get pulled into a ball too`,
     },
@@ -436,8 +430,9 @@ Lina: i dont really know they were just floating up there`,
     return 50 + (sum % 46); // 50..95
   }
 
-  function computeHints(_name: string) {
-    return Math.floor(Math.random() * 3); // 0..2 (placeholder)
+  function computeHints(name: string) {
+    const sum = name.split("").reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
+    return sum % 3; // 0..2 (placeholder)
   }
 
   function computeDepth(name: string) {

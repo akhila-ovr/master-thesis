@@ -553,24 +553,24 @@ function joinList(items: string[]): string {
 // What passing / missing each quiz exercise type suggests the student grasps.
 export const QUANT_CONCEPT: Record<string, { know: string; gap: string }> = {
   "Multiple choice (1 question)": {
-    know: "that gravity points inward to the core",
-    gap: "gravity’s direction",
+    know: "which way gravity pulls (inward, toward the core)",
+    gap: "which way gravity actually pulls",
   },
   "Fill in blanks (1 question)": {
-    know: "the key terms (matter, gravity, core)",
-    gap: "how the terms matter, gravity and core fit together",
+    know: "the key vocabulary (matter, gravity, core)",
+    gap: "how matter, gravity and core fit together",
   },
   "Sorting (1 question)": {
-    know: "that mass drives round shape",
-    gap: "how mass makes objects round",
+    know: "mass as what gives a body its round shape",
+    gap: "how mass makes an object round",
   },
   "True / False (1 question)": {
-    know: "that asteroids stay lumpy without mass",
-    gap: "that mass, not time, forms spheres",
+    know: "why a small rock stays lumpy",
+    gap: "that it is mass, not time, that rounds a body",
   },
   "Drag & drop (1 question)": {
-    know: "gravity cause and effect",
-    gap: "linking gravity causes to their effects",
+    know: "matching gravity causes to their effects",
+    gap: "linking each gravity cause to its effect",
   },
 };
 
@@ -590,27 +590,39 @@ export function quantConceptsFor(s: Student): {
   return { known, gaps };
 }
 
-// Terse one-liner for the class roster's "may know / may not know" column.
+// Terse one-liner for the class roster's "AI Insights" column. Phrasing keys
+// off how many of the five exercise types the student passed, so a student who
+// scraped a single pass reads as struggling, not "solid on" that one concept.
 export function quantSummaryLine(s: Student): string {
   const { known, gaps } = quantConceptsFor(s);
-  if (!known.length && !gaps.length) return "No quiz data yet.";
+  const passed = known.length;
+  const total = passed + gaps.length;
+  if (!total) return "No exercise data yet.";
   if (!gaps.length) return "Secure across all five exercises.";
-  if (!known.length) return "Mass, gravity and sphere link not landing yet.";
+  if (!passed)
+    return "Missed every exercise; the mass, gravity and sphere link is not there yet.";
+  if (passed <= 2)
+    return `Passed just ${passed} of ${total}; still shaky on ${gaps[0]}.`;
+  if (gaps.length === 1)
+    return `Solid across the exercises; the one gap is ${gaps[0]}.`;
   return `Solid on ${known[0]}; shaky on ${gaps[0]}.`;
 }
 
 // Fuller prose for the individual student view.
 export function quantSummaryText(s: Student): string {
   const { known, gaps } = quantConceptsFor(s);
-  const passed = QUESTION_GUIDE.filter(
-    (q) => passedTypeOf(s, q.typeLabel) === true,
-  ).length;
-  if (!known.length && !gaps.length) return "No quiz answers recorded yet.";
+  const passed = known.length;
+  const total = passed + gaps.length;
+  if (!total) return "No exercise answers recorded yet.";
   if (!gaps.length)
-    return `Passed all five exercise types. This student is comfortable with ${joinList(known)}.`;
-  if (!known.length)
+    return `Passed all five exercise types, comfortable with ${joinList(known)}.`;
+  if (!passed)
     return "Missed every exercise type. The core idea that mass creates the gravity which pulls matter into a sphere is not landing yet.";
-  return `Passed ${passed} of five exercise types. Solid on ${joinList(known)}, but still shaky on ${joinList(gaps)}.`;
+  if (passed <= 2)
+    return `Passed just ${passed} of ${total} exercise types, with gaps across most of the exercises, from ${gaps[0]} to ${gaps[gaps.length - 1]}.`;
+  if (gaps.length === 1)
+    return `Passed ${passed} of ${total} exercise types. Solid on ${joinList(known)}; the one remaining gap is ${gaps[0]}.`;
+  return `Passed ${passed} of ${total} exercise types. Solid on ${joinList(known)}, but still shaky on ${joinList(gaps)}.`;
 }
 
 export function reflectionConceptsFor(s: Student): {

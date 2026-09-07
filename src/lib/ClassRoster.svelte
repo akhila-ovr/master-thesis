@@ -31,7 +31,7 @@
   export let debate: any = {};
 
   const TABS = [
-    { id: "quant", label: "Quiz results" },
+    { id: "quant", label: "Exercises" },
     { id: "reflection", label: "Reflection" },
     { id: "debate", label: "Debate" },
     { id: "story", label: "Creative Story Builder" },
@@ -62,12 +62,12 @@
       solid: "bg-purple-500",
     },
     Creative: {
-      border: "border-orange-300",
-      bg: "bg-orange-50",
-      bar: "bg-orange-400",
-      text: "text-orange-700",
-      chip: "bg-orange-100 text-orange-700",
-      solid: "bg-orange-500",
+      border: "border-sky-300",
+      bg: "bg-sky-50",
+      bar: "bg-sky-400",
+      text: "text-sky-600",
+      chip: "bg-sky-100 text-sky-700",
+      solid: "bg-sky-500",
     },
   };
   const VERDICT_COLS: Array<{ side: "Logical" | "Creative"; data: { verdict: string; why: string } }> = [
@@ -215,6 +215,13 @@
     them.
   </p>
 
+  <div class="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-3">
+    <div class="text-xs font-bold uppercase tracking-wide text-slate-500">
+      AI Insights
+    </div>
+    <p class="mt-1 text-sm text-slate-600">{reflectionInsight}</p>
+  </div>
+
   <div class="mt-4 grid gap-4 md:grid-cols-3 items-start">
     {#each reflectionGroups as g, i}
       {@const c = REFLECTION_COLORS[i % REFLECTION_COLORS.length]}
@@ -282,13 +289,6 @@
       </div>
     {/each}
   </div>
-
-  <div class="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-3">
-    <div class="text-xs font-bold uppercase tracking-wide text-slate-500">
-      AI Insights
-    </div>
-    <p class="mt-1 text-sm text-slate-600">{reflectionInsight}</p>
-  </div>
   </section>
   {/if}
 
@@ -297,9 +297,16 @@
   <div class="text-sm font-bold uppercase tracking-[0.2em] text-slate-600">
     Debate
   </div>
-  <blockquote class="mt-3 rounded-xl border-l-4 border-accent-400 bg-accent-50/60 px-4 py-3 text-sm font-semibold text-slate-800">
+  <blockquote class="mt-3 rounded-xl border-l-4 border-pink-400 bg-pink-50/60 px-4 py-3 text-sm font-semibold text-slate-800">
     {DEBATE_QUESTION}
   </blockquote>
+
+  <div class="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-3">
+    <div class="text-xs font-bold uppercase tracking-wide text-slate-500">
+      AI Insights
+    </div>
+    <p class="mt-1 text-sm text-slate-600">{debateInsight}</p>
+  </div>
 
   <div class="mt-3 grid gap-3 sm:grid-cols-2">
     {#each VERDICT_COLS as v}
@@ -379,13 +386,6 @@
       </div>
     {/each}
   </div>
-
-  <div class="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-3">
-    <div class="text-xs font-bold uppercase tracking-wide text-slate-500">
-      AI Insights
-    </div>
-    <p class="mt-1 text-sm text-slate-600">{debateInsight}</p>
-  </div>
   </section>
   {/if}
 
@@ -396,21 +396,21 @@
   </div>
   <p class="mt-2 text-sm text-slate-600">{STORY_INTRO}</p>
 
-  <StoryMindMap {students} />
-
   <div class="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-3">
     <div class="text-xs font-bold uppercase tracking-wide text-slate-500">
       AI Insights
     </div>
     <p class="mt-1 text-sm text-slate-600">{storyInsight}</p>
   </div>
+
+  <StoryMindMap {students} />
   </section>
   {/if}
 
   {#if activeTab === "quant"}
   <section class="mt-4 rounded-2xl border border-slate-300 p-4 sm:p-5">
   <div class="text-sm font-bold uppercase tracking-[0.2em] text-slate-600">
-    Quiz results
+    Exercises
   </div>
 
   <div class="mt-2 grid gap-3 sm:grid-cols-3">
@@ -442,6 +442,24 @@
         {quantWeakest?.passed ?? 0}/{total}
       </div>
     </div>
+  </div>
+
+  <div class="mt-3 rounded-xl border border-slate-200 bg-slate-50 p-3">
+    <div class="text-xs font-bold uppercase tracking-wide text-slate-500">
+      What each exercise asks
+    </div>
+    <dl class="mt-2 space-y-2">
+      {#each questionGuide as q}
+        <div>
+          <dt
+            class="text-[11px] font-semibold uppercase tracking-wider text-slate-400"
+          >
+            {q.label}
+          </dt>
+          <dd class="mt-0.5 text-sm text-slate-600">{q.text}</dd>
+        </div>
+      {/each}
+    </dl>
   </div>
 
   <div class="mt-3 overflow-x-auto">
@@ -507,24 +525,6 @@
       </tbody>
     </table>
   </div>
-  </section>
-
-  <section class="mt-4 rounded-2xl border border-slate-300 p-4 sm:p-5">
-    <div class="text-sm font-bold uppercase tracking-[0.2em] text-slate-600">
-      What each exercise asks
-    </div>
-    <dl class="mt-3 space-y-3">
-      {#each questionGuide as q}
-        <div>
-          <dt
-            class="text-[11px] font-semibold uppercase tracking-wider text-slate-400"
-          >
-            {q.label}
-          </dt>
-          <dd class="mt-0.5 text-sm text-slate-600">{q.text}</dd>
-        </div>
-      {/each}
-    </dl>
   </section>
   {/if}
 </div>

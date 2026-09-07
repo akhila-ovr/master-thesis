@@ -47,10 +47,10 @@
   </div>
 </div>
 
-<!-- Quiz results -->
+<!-- Exercises -->
 <section class="mt-6">
   <h3 class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
-    Quiz results
+    Exercises
   </h3>
   <ul class="mt-3 space-y-2">
     {#each QUESTION_GUIDE as q}
