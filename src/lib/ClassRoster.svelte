@@ -445,6 +445,18 @@
   </div>
 
   <div class="mt-3 rounded-xl border border-slate-200 bg-slate-50 p-3">
+    <p class="text-sm text-slate-600">
+      <span class="text-xs font-bold uppercase tracking-wide text-slate-500"
+        >AI insights</span
+      >
+      <span class="text-slate-400"> · </span>
+      The class's shakiest ground is how mass makes objects round (only 3/10
+      passed Sorting), while most already have a handle on gravity cause and
+      effect.
+    </p>
+  </div>
+
+  <div class="mt-3 rounded-xl border border-slate-200 bg-slate-50 p-3">
     <div class="text-xs font-bold uppercase tracking-wide text-slate-500">
       What each exercise asks
     </div>
