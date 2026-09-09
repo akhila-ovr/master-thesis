@@ -289,51 +289,6 @@
 
   export const students = [
     {
-      name: "Finn D.",
-      group: "A",
-      summary: "Says gravity makes things fall, but describes it as pulling toward the ground rather than toward the planet's center.",
-      transcript: `Sparkli: What did you learn about gravity today?
-Finn: it makes stuff fall down onto the ground
-Sparkli: Where is it pulling things to?
-Finn: um just down? i dont really get it`,
-    },
-    {
-      name: "Omar S.",
-      group: "A",
-      summary: "Reflection is blank of real content: it just says the work was finished, with nothing about gravity or mass.",
-      transcript: `Sparkli: What did you learn about gravity today?
-Omar: it was ok i finished mine
-Sparkli: Can you tell me one thing about why Earth is round?
-Omar: umm i cant remember sorry`,
-    },
-    {
-      name: "Noah R.",
-      group: "A",
-      summary: "Two misconceptions in the reflection: calls gravity the air pushing down, and thinks Earth is round because it spins fast. Nothing about the pull toward the center or the role of mass, and exercise scores are low across the board.",
-      transcript: `Sparkli: What did you learn about gravity today?
-Noah: gravity is the air pushing down on us and that holds everything on the ground
-Sparkli: What makes a planet round instead of lumpy?
-Noah: i think the earth spins really fast so it goes round`,
-    },
-    {
-      name: "Amara K.",
-      group: "B",
-      summary: "Says heavy planets have more gravity, but doesn't explain what that gravity then does or why it makes a sphere.",
-      transcript: `Sparkli: What did you learn about gravity today?
-Amara: big heavy planets have way more gravity
-Sparkli: What does that gravity actually do?
-Amara: it just pulls stuff harder i think`,
-    },
-    {
-      name: "James T.",
-      group: "B",
-      summary: "Uses the right words at a high level, gravity is an important force for planets and space, but nothing specific from the expedition: no mention of the pull toward the center, mass, or what makes a body round. Exercise scores are strong.",
-      transcript: `Sparkli: What did you learn about gravity today?
-James: i learned gravity is a really important force for planets and space
-Sparkli: Can you tell me anything about mass or why Earth is round?
-James: we did loads about how gravity works, it was pretty interesting`,
-    },
-    {
       name: "Luca B.",
       group: "C",
       summary: "Explains that gravity pulls all of Earth's matter toward the center from every side, ties it to a model volcano he once built, and notes he hadn't realized solid rock could bend under that pressure.",
@@ -341,6 +296,15 @@ James: we did loads about how gravity works, it was pretty interesting`,
 Luca: gravity pulls all the rock into the middle of the earth from every side and it squishes it into a big round ball
 Sparkli: Have you come across this before?
 Luca: i made a model volcano at home once and i didnt know the rock actually bends from all that squishing thats so cool`,
+    },
+    {
+      name: "Finn D.",
+      group: "A",
+      summary: "Says gravity makes things fall, but describes it as pulling toward the ground rather than toward the planet's center.",
+      transcript: `Sparkli: What did you learn about gravity today?
+Finn: it makes stuff fall down onto the ground
+Sparkli: Where is it pulling things to?
+Finn: um just down? i dont really get it`,
     },
     {
       name: "Priya N.",
@@ -352,6 +316,33 @@ Sparkli: Did you know about this before?
 Priya: i knew big things had more gravity but i didnt know even the puffy gas planets get pulled into a ball too`,
     },
     {
+      name: "Omar S.",
+      group: "A",
+      summary: "Reflection is blank of real content: it just says the work was finished, with nothing about gravity or mass.",
+      transcript: `Sparkli: What did you learn about gravity today?
+Omar: it was ok i finished mine
+Sparkli: Can you tell me one thing about why Earth is round?
+Omar: umm i cant remember sorry`,
+    },
+    {
+      name: "James T.",
+      group: "B",
+      summary: "Uses the right words at a high level, gravity is an important force for planets and space, but nothing specific from the expedition: no mention of the pull toward the center, mass, or what makes a body round. Exercise scores are strong.",
+      transcript: `Sparkli: What did you learn about gravity today?
+James: i learned gravity is a really important force for planets and space
+Sparkli: Can you tell me anything about mass or why Earth is round?
+James: we did loads about how gravity works, it was pretty interesting`,
+    },
+    {
+      name: "Lina P.",
+      group: "D",
+      summary: "Shares that she saw a video of astronauts floating, but doesn't explain why gravity feels different there.",
+      transcript: `Sparkli: What did you learn about gravity today?
+Lina: i saw a video of astronauts just floating about in space once
+Sparkli: Why do you think gravity is different for them?
+Lina: i dont really know they were just floating up there`,
+    },
+    {
       name: "Yara H.",
       group: "C",
       summary: "Explains that asteroids stay lumpy because they lack the mass for strong gravity, and reflects that she used to think every space rock was round.",
@@ -359,6 +350,15 @@ Priya: i knew big things had more gravity but i didnt know even the puffy gas pl
 Yara: asteroids stay all lumpy cause they dont have enough mass so their gravity is too weak to pull them into a ball
 Sparkli: Had you thought about this before?
 Yara: i used to think all the space rocks were round like tiny planets so that really surprised me`,
+    },
+    {
+      name: "Amara K.",
+      group: "B",
+      summary: "Says heavy planets have more gravity, but doesn't explain what that gravity then does or why it makes a sphere.",
+      transcript: `Sparkli: What did you learn about gravity today?
+Amara: big heavy planets have way more gravity
+Sparkli: What does that gravity actually do?
+Amara: it just pulls stuff harder i think`,
     },
     {
       name: "Sofia M.",
@@ -370,21 +370,38 @@ Sparkli: Is there anything that surprised you?
 Sofia: i didnt know down actually means the middle not just the floor`,
     },
     {
-      name: "Lina P.",
-      group: "D",
-      summary: "Shares that she saw a video of astronauts floating, but doesn't explain why gravity feels different there.",
+      name: "Noah R.",
+      group: "A",
+      summary: "Two misconceptions in the reflection: calls gravity the air pushing down, and thinks Earth is round because it spins fast. Nothing about the pull toward the center or the role of mass, and exercise scores are low across the board.",
       transcript: `Sparkli: What did you learn about gravity today?
-Lina: i saw a video of astronauts just floating about in space once
-Sparkli: Why do you think gravity is different for them?
-Lina: i dont really know they were just floating up there`,
+Noah: gravity is the air pushing down on us and that holds everything on the ground
+Sparkli: What makes a planet round instead of lumpy?
+Noah: i think the earth spins really fast so it goes round`,
     },
-  ].map((s) => ({
-    ...s,
-    score: computeReflectionScore(s.name, s.group),
-    debateSide: getDebateSide(s.name),
-    creativeChoice: pickCreativeChoice(s.name),
-    quizAnswers: computeQuizAnswers(s.name, s.group),
-  }));
+  ]
+    .map((s) => ({
+      ...s,
+      score: computeReflectionScore(s.name, s.group),
+      debateSide: getDebateSide(s.name),
+      creativeChoice: pickCreativeChoice(s.name),
+      quizAnswers: computeQuizAnswers(s.name, s.group),
+    }))
+    // Priya's reflection shows one real misconception: she thinks time, not
+    // mass, is what rounds an asteroid out. That is exactly what the
+    // True / False exercise asks, so mark that one wrong. Her group C band
+    // otherwise generates near-perfect answers, which would hide the slip.
+    .map((s) =>
+      s.name === "Priya N."
+        ? {
+            ...s,
+            quizAnswers: s.quizAnswers.map((a) =>
+              a.typeLabel === "True / False (1 question)"
+                ? { ...a, outcome: "wrong" as const }
+                : a,
+            ),
+          }
+        : s,
+    );
 
   // Chip color maps to severity, not an arbitrary hue: danger (needs
   // re-teaching) > warning (needs deeper prompting) > neutral (mixed) >
