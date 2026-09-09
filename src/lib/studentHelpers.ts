@@ -13,7 +13,6 @@ export interface QuizAnswer {
 
 export interface Student {
   name: string;
-  group: string;
   summary: string;
   transcript: string;
   score?: number;

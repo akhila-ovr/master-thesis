@@ -20,9 +20,7 @@
   let view: View = "list";
   let modalOpen = false;
   let filterGroup: string | null = null;
-  $: filtered = filterGroup
-    ? students.filter((s) => s.group === filterGroup)
-    : students;
+  $: filtered = students;
   $: activeGroup = groups.find((g) => g.id === filterGroup);
   let selectedIndex: number | null = null;
 

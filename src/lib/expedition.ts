@@ -301,17 +301,37 @@ export type StoryStep = {
   chosenKey: string;
 };
 
-// Deterministic per-student walk down the tree: at each node, a hash of the
-// student's name and the level picks one option, then moves into whatever
-// question (if any) that option leads to.
+// The exact route each student took through the tree, as the option key at
+// each level. Pinned rather than generated so the Creative Story Builder
+// shows fixed choices; a name not listed here falls back to the name-hash
+// walk below.
+const STORY_ROUTE_KEYS: Record<string, string[]> = {
+  "Finn D.": ["box", "magnets", "show"],
+  "Omar S.": ["box", "weights", "show"],
+  "Noah R.": ["sphere", "steel", "firm"],
+  "Amara K.": ["sphere", "foam", "loose"],
+  "James T.": ["box", "weights", "show"],
+  "Luca B.": ["box", "weights", "hide"],
+  "Priya N.": ["sphere", "steel", "firm"],
+  "Yara H.": ["box", "magnets", "hide"],
+  "Sofia M.": ["box", "weights", "hide"],
+  "Lina P.": ["box", "weights", "hide"],
+};
+
+// Per-student walk down the tree: follow the pinned route for this student if
+// there is one, otherwise let a hash of the name and level pick each option.
+// Either way the walk then moves into whatever question that option leads to.
 export function storyPathFor(s: Student): StoryStep[] {
+  const pinned = STORY_ROUTE_KEYS[s.name];
   const steps: StoryStep[] = [];
   let node: StoryNode | undefined = STORY_TREE;
   let level = 1;
   while (node) {
     const opts: StoryOption[] = node.options;
-    const idx = hashOf(`story|L${level}|${s.name}`) % opts.length;
-    const opt: StoryOption = opts[idx];
+    const pinnedKey = pinned?.[level - 1];
+    const opt: StoryOption =
+      opts.find((o) => o.key === pinnedKey) ??
+      opts[hashOf(`story|L${level}|${s.name}`) % opts.length];
     steps.push({ level, question: node.question, options: opts, chosenKey: opt.key });
     node = opt.next;
     level++;

@@ -68,11 +68,17 @@
   }
 
   // --- Quantitative: per-exercise pass rate + class average score ----------
-  $: quantPerColumn = columns.map((c) => ({
-    label: c.label,
-    short: c.short,
-    passed: students.filter((s) => passed(s, c.label) === true).length,
-  }));
+  $: quantPerColumn = columns.map((c) => {
+    const passedBy = students
+      .filter((s) => passed(s, c.label) === true)
+      .map((s) => s.name);
+    return {
+      label: c.label,
+      short: c.short,
+      passed: passedBy.length,
+      passedBy,
+    };
+  });
   $: quantMax = columns.length;
   $: quantAvg = students.length
     ? Math.round(
@@ -173,35 +179,41 @@
         <span class="text-slate-300">·</span>
         {quantInsight}
       </div>
-      <div class="mt-4 space-y-2">
+      <div class="mt-4 space-y-3">
         {#each quantPerColumn as c}
-          <div class="flex items-center gap-2">
-            <div
-              class="flex w-32 shrink-0 items-center gap-1 whitespace-nowrap text-[11px] font-medium text-slate-600"
-            >
-              <span>{c.short}</span>
-              <span class="group relative inline-flex">
-                <span
-                  class="flex h-3.5 w-3.5 cursor-help items-center justify-center rounded-full border border-slate-300 text-[9px] font-bold leading-none text-slate-400"
-                  >i</span
-                >
-                <span
-                  class="pointer-events-none absolute left-1/2 top-full z-20 mt-1.5 w-max max-w-xs -translate-x-1/2 whitespace-normal rounded-lg border border-slate-200 bg-white p-2 text-[11px] font-normal leading-snug text-slate-600 opacity-0 shadow-lg transition-opacity group-hover:opacity-100"
-                >
-                  {questionTextFor(c.label)}
-                </span>
-              </span>
-            </div>
-            <div class="h-2 flex-1 rounded-full bg-slate-100">
+          <div>
+            <div class="flex items-center gap-2">
               <div
-                class="h-full rounded-full bg-accent-400"
-                style="width:{pct(c.passed)}%"
-              ></div>
+                class="flex w-32 shrink-0 items-center gap-1 whitespace-nowrap text-[11px] font-medium text-slate-600"
+              >
+                <span>{c.short}</span>
+                <span class="group relative inline-flex">
+                  <span
+                    class="flex h-3.5 w-3.5 cursor-help items-center justify-center rounded-full border border-slate-300 text-[9px] font-bold leading-none text-slate-400"
+                    >i</span
+                  >
+                  <span
+                    class="pointer-events-none absolute left-1/2 top-full z-20 mt-1.5 w-max max-w-xs -translate-x-1/2 whitespace-normal rounded-lg border border-slate-200 bg-white p-2 text-[11px] font-normal leading-snug text-slate-600 opacity-0 shadow-lg transition-opacity group-hover:opacity-100"
+                  >
+                    {questionTextFor(c.label)}
+                  </span>
+                </span>
+              </div>
+              <div class="h-2 flex-1 rounded-full bg-slate-100">
+                <div
+                  class="h-full rounded-full bg-accent-400"
+                  style="width:{pct(c.passed)}%"
+                ></div>
+              </div>
+              <div
+                class="w-9 shrink-0 text-right text-[11px] font-semibold tabular-nums text-slate-500"
+              >
+                {c.passed}/{total}
+              </div>
             </div>
-            <div
-              class="w-9 shrink-0 text-right text-[11px] font-semibold tabular-nums text-slate-500"
-            >
-              {c.passed}/{total}
+            <div class="mt-1 pl-[8.5rem] text-[11px] text-slate-500">
+              <span class="font-semibold text-slate-400">Passed by</span>
+              {c.passedBy.join(", ") || "None"}
             </div>
           </div>
         {/each}

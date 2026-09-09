@@ -205,24 +205,6 @@
     },
   };
 
-  // Individual reflection depth scores (1-5, matching the reflection rubric)
-  // aren't tracked per student directly, so generate them deterministically from
-  // each student's group assignment (which sets the plausible score range)
-  // plus a per-name hash (so scores are stable across renders, not random).
-  const groupScoreRanges: Record<string, [number, number]> = {
-    A: [1, 2], // low score, error in reflection
-    B: [1, 2], // high score, but surface-level reflection
-    C: [4, 5], // high score, rich reflection
-    D: [2, 4], // mixed performance
-  };
-
-  function computeReflectionScore(name: string, group: string): number {
-    const [min, max] = groupScoreRanges[group] ?? [2, 4];
-    const span = max - min + 1;
-    const hash = name.split("").reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
-    return min + (hash % span);
-  }
-
   // Individual quiz answers, debate side, and creative-story pick aren't
   // tracked per student either; only class-wide aggregates exist (the
   // percentages shown in Question type breakdown / Creative story). Generate
@@ -292,7 +274,6 @@
   export const students = [
     {
       name: "Finn D.",
-      group: "A",
       summary: "Says gravity makes things fall, but describes it as pulling toward the ground rather than toward the planet's center.",
       transcript: `Sparkli: What did you learn about gravity today?
 Finn: it makes stuff fall down onto the ground
@@ -301,7 +282,6 @@ Finn: um just down? i dont really get it`,
     },
     {
       name: "Omar S.",
-      group: "A",
       summary: "Reflection is blank of real content: it just says the work was finished, with nothing about gravity or mass.",
       transcript: `Sparkli: What did you learn about gravity today?
 Omar: it was ok i finished mine
@@ -310,7 +290,6 @@ Omar: umm i cant remember sorry`,
     },
     {
       name: "Noah R.",
-      group: "A",
       summary: "Two misconceptions in the reflection: calls gravity the air pushing down, and thinks Earth is round because it spins fast. Nothing about the pull toward the center or the role of mass, and exercise scores are low across the board.",
       transcript: `Sparkli: What did you learn about gravity today?
 Noah: gravity is the air pushing down on us and that holds everything on the ground
@@ -319,7 +298,6 @@ Noah: i think the earth spins really fast so it goes round`,
     },
     {
       name: "Amara K.",
-      group: "B",
       summary: "Says heavy planets have more gravity, but doesn't explain what that gravity then does or why it makes a sphere.",
       transcript: `Sparkli: What did you learn about gravity today?
 Amara: big heavy planets have way more gravity
@@ -328,7 +306,6 @@ Amara: it just pulls stuff harder i think`,
     },
     {
       name: "James T.",
-      group: "B",
       summary: "Uses the right words at a high level, gravity is an important force for planets and space, but nothing specific from the expedition: no mention of the pull toward the center, mass, or what makes a body round. Exercise scores are strong.",
       transcript: `Sparkli: What did you learn about gravity today?
 James: i learned gravity is a really important force for planets and space
@@ -337,7 +314,6 @@ James: we did loads about how gravity works, it was pretty interesting`,
     },
     {
       name: "Luca B.",
-      group: "C",
       summary: "Explains that gravity pulls all of Earth's matter toward the center from every side, ties it to a model volcano he once built, and notes he hadn't realized solid rock could bend under that pressure.",
       transcript: `Sparkli: What did you learn about gravity today?
 Luca: gravity pulls all the rock into the middle of the earth from every side and it squishes it into a big round ball
@@ -346,7 +322,6 @@ Luca: i made a model volcano at home once and i didnt know the rock actually ben
     },
     {
       name: "Priya N.",
-      group: "C",
       summary: "A thorough explanation of mass driving the inward pull that squashes a body into a sphere, but with one slip: she thinks small asteroids will round out too if given enough time, when it is mass, not time, that does it.",
       transcript: `Sparkli: What did you learn about gravity today?
 Priya: the more heavy a planet is the stronger its gravity gets so it pulls itself inwards and squishes into a round ball, and i think even small asteroids will slowly get pulled round too if theyre floating out there long enough
@@ -355,7 +330,6 @@ Priya: i knew big things had more gravity but i didnt know even the puffy gas pl
     },
     {
       name: "Yara H.",
-      group: "C",
       summary: "Explains that asteroids stay lumpy because they lack the mass for strong gravity, and reflects that she used to think every space rock was round.",
       transcript: `Sparkli: What did you learn about gravity today?
 Yara: asteroids stay all lumpy cause they dont have enough mass so their gravity is too weak to pull them into a ball
@@ -364,7 +338,6 @@ Yara: i used to think all the space rocks were round like tiny planets so that r
     },
     {
       name: "Sofia M.",
-      group: "D",
       summary: "Explains that gravity pulls toward the center from all directions so down always points inward, but doesn't link it back to mass.",
       transcript: `Sparkli: What did you learn about gravity today?
 Sofia: gravity pulls everything to the middle of the earth from all the sides so down always points to the centre
@@ -373,7 +346,6 @@ Sofia: i didnt know down actually means the middle not just the floor`,
     },
     {
       name: "Lina P.",
-      group: "D",
       summary: "Shares that she saw a video of astronauts floating, but doesn't explain why gravity feels different there.",
       transcript: `Sparkli: What did you learn about gravity today?
 Lina: i saw a video of astronauts just floating about in space once
@@ -382,49 +354,10 @@ Lina: i dont really know they were just floating up there`,
     },
   ].map((s) => ({
     ...s,
-    score: computeReflectionScore(s.name, s.group),
     debateSide: getDebateSide(s.name),
     creativeChoice: pickCreativeChoice(s.name),
     quizAnswers: computeQuizAnswers(s.name),
   }));
-
-  // Chip color maps to severity, not an arbitrary hue: danger (needs
-  // re-teaching) > warning (needs deeper prompting) > neutral (mixed) >
-  // success (on track).
-  export const groups = [
-    {
-      id: "A",
-      label: "Group A: Low score, error in reflection",
-      chipTextClass: "text-rose-700",
-      chipBgClass: "bg-rose-100",
-      description:
-        "This group scored below 55% and reflections show errors or misconceptions. Recommend re-teaching key concepts.",
-    },
-    {
-      id: "B",
-      label: "Group B: High score, surface reflection",
-      chipTextClass: "text-amber-700",
-      chipBgClass: "bg-amber-100",
-      description:
-        "This group scored 80%+ but their reflections are surface-level. Recommend prompting for deeper thinking.",
-    },
-    {
-      id: "C",
-      label: "Group C: High score, rich reflection",
-      chipTextClass: "text-emerald-700",
-      chipBgClass: "bg-emerald-100",
-      description:
-        "This group scored well and provided rich reflections. No immediate action needed, but consider enrichment activities.",
-    },
-    {
-      id: "D",
-      label: "Group D: Mixed performance",
-      chipTextClass: "text-slate-700",
-      chipBgClass: "bg-slate-100",
-      description:
-        "This group has mixed scores and reflections. Recommend reviewing individual student performance for targeted support.",
-    },
-  ];
 
   // Helpers for student table (simple deterministic heuristics)
   function computeScore(name: string) {
@@ -482,7 +415,7 @@ Lina: i dont really know they were just floating up there`,
       </div>
       <div class="flex gap-2.5 shrink-0">
         <div class="flex items-center rounded-full border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-500 shadow-sm">{students.length} students</div>
-        <StudentSearch {students} {groups} {debate} />
+        <StudentSearch {students} {debate} />
       </div>
     </header>
 

@@ -19,15 +19,8 @@
 
   export let student: Student;
   export let debate: any = {};
-  export let groups: Array<{
-    id: string;
-    label: string;
-    chipTextClass?: string;
-    chipBgClass?: string;
-  }> = [];
 
   $: avatar = avatarFor(student?.name ?? "");
-  $: groupMeta = groups.find((g) => g.id === student?.group);
   $: logicalSideName = debate?.right?.name;
   $: debateResult = debatePicks(student, logicalSideName);
   $: storySteps = storyDetailFor(student);
@@ -43,16 +36,7 @@
   >
     {avatar.initials}
   </div>
-  <div>
-    <div class="font-display text-lg font-bold text-slate-900">{student.name}</div>
-    {#if groupMeta}
-      <div
-        class="mt-1 inline-block rounded-full px-2.5 py-0.5 text-xs font-bold {groupMeta.chipTextClass} {groupMeta.chipBgClass}"
-      >
-        {groupMeta.label}
-      </div>
-    {/if}
-  </div>
+  <div class="font-display text-lg font-bold text-slate-900">{student.name}</div>
 </div>
 
 <!-- Quantitative exercises -->
