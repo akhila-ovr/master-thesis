@@ -250,41 +250,43 @@
     return creativeOptionLabels[2];
   }
 
-  // Individual quiz accuracy also isn't tracked per student, just the
-  // class-wide per-question percentages exist (used for the aggregate bars
-  // in Question type breakdown). For an individual student's 12 answers, use
-  // their GROUP's known performance band instead of the class-wide numbers,
-  // so a Group A student (quiz score below 55%) actually shows mostly wrong
-  // answers rather than drifting toward the class average.
-  const groupQuizParts: Record<string, [number, number, number]> = {
-    A: [20, 25, 55], // below 55% combined correct
-    B: [55, 30, 15], // 80%+ combined correct
-    C: [60, 30, 10], // scored well, slightly ahead of B
-    D: [35, 30, 35], // mixed
+  // Per-student exercise results, taken straight from the class scoreboard
+  // rather than generated. The dashboard only ever asks "did this student
+  // pass this exercise type?" (passedTypeOf), so each type is recorded as a
+  // plain pass (every question of that type correct) or fail (all wrong).
+  type QuizTypeKey = "mc" | "fill" | "sort" | "tf" | "drag";
+  const QUIZ_PASS: Record<string, Record<QuizTypeKey, boolean>> = {
+    "Finn D.":  { mc: false, fill: false, sort: false, tf: true,  drag: false },
+    "Omar S.":  { mc: false, fill: false, sort: false, tf: false, drag: false },
+    "Noah R.":  { mc: false, fill: false, sort: false, tf: true,  drag: false },
+    "Amara K.": { mc: true,  fill: true,  sort: true,  tf: false, drag: true  },
+    "James T.": { mc: true,  fill: true,  sort: false, tf: true,  drag: true  },
+    "Luca B.":  { mc: true,  fill: true,  sort: true,  tf: false, drag: true  },
+    "Priya N.": { mc: true,  fill: true,  sort: false, tf: true,  drag: true  },
+    "Yara H.":  { mc: true,  fill: true,  sort: true,  tf: true,  drag: true  },
+    "Sofia M.": { mc: true,  fill: true,  sort: false, tf: true,  drag: true  },
+    "Lina P.":  { mc: true,  fill: true,  sort: false, tf: true,  drag: true  },
   };
 
-  function pickOutcome(
-    name: string,
-    questionKey: string,
-    parts: number[],
-  ): "correct" | "retry" | "wrong" {
-    const [p0, p1] = parts;
-    const roll = hashOf(name, questionKey) % 100;
-    if (roll < p0) return "correct";
-    if (roll < p0 + p1) return "retry";
-    return "wrong";
-  }
+  const QUIZ_TYPE_KEY: Record<string, QuizTypeKey> = {
+    "Multiple choice (4 questions)": "mc",
+    "Fill in blanks (2 questions)": "fill",
+    "Sorting (1 question)": "sort",
+    "True / False (3 questions)": "tf",
+    "Drag & drop (2 questions)": "drag",
+  };
 
-  function computeQuizAnswers(name: string, group: string) {
-    const parts = groupQuizParts[group] ?? [40, 30, 30];
-    return questionTypes.flatMap((qt: any) =>
-      qt.questions.map((q: any) => ({
+  function computeQuizAnswers(name: string) {
+    const passMap = QUIZ_PASS[name];
+    return questionTypes.flatMap((qt: any) => {
+      const ok = passMap?.[QUIZ_TYPE_KEY[qt.label as string]] ?? false;
+      return qt.questions.map((q: any) => ({
         typeLabel: qt.label as string,
         qLabel: q.label as string,
         question: (q.question as string) ?? "",
-        outcome: pickOutcome(name, `${q.label}-${q.question}`, parts),
-      })),
-    );
+        outcome: (ok ? "correct" : "wrong") as "correct" | "retry" | "wrong",
+      }));
+    });
   }
 
   export const students = [
@@ -293,97 +295,97 @@
       group: "A",
       summary: "Says gravity makes things fall, but describes it as pulling toward the ground rather than toward the planet's center.",
       transcript: `Sparkli: What did you learn about gravity today?
-Finn: gravity pulls stuff down to the floor
+Finn: it makes stuff fall down onto the ground
 Sparkli: Where is it pulling things to?
-Finn: just down i think, i dont really know`,
+Finn: um just down? i dont really get it`,
     },
     {
       name: "Omar S.",
       group: "A",
       summary: "Reflection is blank of real content: it just says the work was finished, with nothing about gravity or mass.",
       transcript: `Sparkli: What did you learn about gravity today?
-Omar: it was ok i finished
+Omar: it was ok i finished mine
 Sparkli: Can you tell me one thing about why Earth is round?
-Omar: um i dont remember`,
+Omar: umm i cant remember sorry`,
     },
     {
       name: "Noah R.",
-      group: "B",
-      summary: "Reflection doesn't mention anything from the expedition: just a brief comment that the task was done.",
+      group: "A",
+      summary: "Two misconceptions in the reflection: calls gravity the air pushing down, and thinks Earth is round because it spins fast. Nothing about the pull toward the center or the role of mass, and exercise scores are low across the board.",
       transcript: `Sparkli: What did you learn about gravity today?
-Noah: it was good i did it
+Noah: gravity is the air pushing down on us and that holds everything on the ground
 Sparkli: What makes a planet round instead of lumpy?
-Noah: i dont know sorry`,
+Noah: i think the earth spins really fast so it goes round`,
     },
     {
       name: "Amara K.",
       group: "B",
       summary: "Says heavy planets have more gravity, but doesn't explain what that gravity then does or why it makes a sphere.",
       transcript: `Sparkli: What did you learn about gravity today?
-Amara: big heavy planets have more gravity
+Amara: big heavy planets have way more gravity
 Sparkli: What does that gravity actually do?
-Amara: it just pulls harder i guess`,
+Amara: it just pulls stuff harder i think`,
     },
     {
       name: "James T.",
       group: "B",
-      summary: "Reflection is just two words and doesn't reference anything from the expedition.",
+      summary: "Uses the right words at a high level, gravity is an important force for planets and space, but nothing specific from the expedition: no mention of the pull toward the center, mass, or what makes a body round. Exercise scores are strong.",
       transcript: `Sparkli: What did you learn about gravity today?
-James: it was fine
+James: i learned gravity is a really important force for planets and space
 Sparkli: Can you tell me anything about mass or why Earth is round?
-James: not really sorry`,
+James: we did loads about how gravity works, it was pretty interesting`,
     },
     {
       name: "Luca B.",
       group: "C",
       summary: "Explains that gravity pulls all of Earth's matter toward the center from every side, ties it to a model volcano he once built, and notes he hadn't realized solid rock could bend under that pressure.",
       transcript: `Sparkli: What did you learn about gravity today?
-Luca: gravity pulls all the rock towards the middle of the earth from every side so it squashes into a ball
+Luca: gravity pulls all the rock into the middle of the earth from every side and it squishes it into a big round ball
 Sparkli: Have you come across this before?
-Luca: i built a model volcano once but i didnt know the rock actually bends from the pressure thats mad`,
+Luca: i made a model volcano at home once and i didnt know the rock actually bends from all that squishing thats so cool`,
     },
     {
       name: "Priya N.",
       group: "C",
-      summary: "Explains the link between mass and gravity, more mass means a stronger inward pull, and reflects that she hadn't realized gas planets get pulled round too.",
+      summary: "A thorough explanation of mass driving the inward pull that squashes a body into a sphere, but with one slip: she thinks small asteroids will round out too if given enough time, when it is mass, not time, that does it.",
       transcript: `Sparkli: What did you learn about gravity today?
-Priya: the more mass something has the stronger its gravity so it pulls itself inwards into a sphere
+Priya: the more heavy a planet is the stronger its gravity gets so it pulls itself inwards and squishes into a round ball, and i think even small asteroids will slowly get pulled round too if theyre floating out there long enough
 Sparkli: Did you know about this before?
-Priya: i knew big things had more gravity but i didnt realise even the gas planets get pulled into a ball`,
+Priya: i knew big things had more gravity but i didnt know even the puffy gas planets get pulled into a ball too`,
     },
     {
       name: "Yara H.",
       group: "C",
       summary: "Explains that asteroids stay lumpy because they lack the mass for strong gravity, and reflects that she used to think every space rock was round.",
       transcript: `Sparkli: What did you learn about gravity today?
-Yara: asteroids are lumpy because they dont have enough mass so their gravity is too weak to pull them into a ball
+Yara: asteroids stay all lumpy cause they dont have enough mass so their gravity is too weak to pull them into a ball
 Sparkli: Had you thought about this before?
-Yara: i used to think all the space rocks were round like little planets so that surprised me`,
+Yara: i used to think all the space rocks were round like tiny planets so that really surprised me`,
     },
     {
       name: "Sofia M.",
       group: "D",
       summary: "Explains that gravity pulls toward the center from all directions so down always points inward, but doesn't link it back to mass.",
       transcript: `Sparkli: What did you learn about gravity today?
-Sofia: gravity pulls everything towards the centre of the earth from all directions so down always points to the middle
+Sofia: gravity pulls everything to the middle of the earth from all the sides so down always points to the centre
 Sparkli: Is there anything that surprised you?
-Sofia: i didnt know down meant the centre and not just towards the ground`,
+Sofia: i didnt know down actually means the middle not just the floor`,
     },
     {
       name: "Lina P.",
       group: "D",
       summary: "Shares that she saw a video of astronauts floating, but doesn't explain why gravity feels different there.",
       transcript: `Sparkli: What did you learn about gravity today?
-Lina: i saw astronauts floating in a video once
+Lina: i saw a video of astronauts just floating about in space once
 Sparkli: Why do you think gravity is different for them?
-Lina: i dont know they were just floating around`,
+Lina: i dont really know they were just floating up there`,
     },
   ].map((s) => ({
     ...s,
     score: computeReflectionScore(s.name, s.group),
     debateSide: getDebateSide(s.name),
     creativeChoice: pickCreativeChoice(s.name),
-    quizAnswers: computeQuizAnswers(s.name, s.group),
+    quizAnswers: computeQuizAnswers(s.name),
   }));
 
   // Chip color maps to severity, not an arbitrary hue: danger (needs
@@ -470,12 +472,11 @@ Lina: i dont know they were just floating around`,
 
     <header class="mb-6 flex flex-col sm:flex-row gap-3">
       <div
-        class="flex-1 flex items-center gap-3.5 rounded-full pl-2.5 pr-5 py-2 shadow-lg shadow-accent-200/40"
+        class="flex-1 flex items-center gap-3.5 rounded-full px-5 py-3 shadow-lg shadow-accent-200/40"
         style="background: linear-gradient(100deg, #FDE68A 0%, #F9A8D4 45%, #C4B5FD 100%);"
       >
-        <div class="w-11 h-11 rounded-full bg-white flex items-center justify-center text-xl shadow-sm shrink-0">🌍</div>
         <h1 class="font-display text-lg font-bold text-violet-950">
-          The Invisible Grip That Shapes Our World
+          Why is the Earth round?
         </h1>
         <span class="ml-auto shrink-0 rounded-full bg-white/70 px-3 py-1 text-xs font-bold text-violet-800">Expedition review</span>
       </div>

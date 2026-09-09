@@ -142,8 +142,8 @@
                   on:click={() => selectStudent(i)}
                   class="flex flex-col items-center gap-2 p-4 rounded-2xl border border-accent-100 bg-accent-50/30 hover:bg-white hover:shadow-sm transition-colors"
                 >
-                  <div class="w-16 h-16 rounded-full {avatar.bg} flex items-center justify-center text-3xl shadow-sm">
-                    {avatar.emoji}
+                  <div class="w-16 h-16 rounded-full {avatar.bg} flex items-center justify-center font-display text-xl font-bold shadow-sm">
+                    {avatar.initials}
                   </div>
                   <div class="text-sm font-medium text-slate-800 text-center">{st.name}</div>
                   {#if st.score || stats}

@@ -179,75 +179,273 @@ export function debatePicks(
 // ---------------------------------------------------------------------------
 // Story (Creative Story Builder)
 // ---------------------------------------------------------------------------
+// A branching choose-your-path: the question a student sees next, and the
+// options it offers, depend on what they picked at the step before. Two of
+// the four step-2 options lead to the same step-3 question and options (the
+// tree merges back together), so `next` is the same object reference on
+// both -- see SPHERE_STEP3 / BOX_STEP3.
+
+export type StoryOption = {
+  key: string;
+  label: string;
+  result: string;
+  next?: StoryNode;
+};
+
+export type StoryNode = {
+  question: string;
+  options: StoryOption[];
+};
 
 export const STORY_INTRO =
-  "Maya and Leo are building a gravity model for a science fair. At each of three junctions, one option stays truer to the physics but takes more work to build right (accuracy-first), and the other is quicker and easier to build but less true to the physics (practicality-first).";
+  "Maya, Leo, and Zara are building a gravity model for the science fair to show how gravity pulls matter to the center. Which question comes next, and what it offers, depends on what the team already chose.";
 
-export const STORY_JUNCTIONS = [
-  {
-    n: 1,
-    topic: "Base design",
-    accurate: "Round sponge ball",
-    accurateWhy:
-      "Marbles roll toward the middle from every side, the way a planet's gravity pulls matter to its center.",
-    practical: "Flat table with a magnet",
-    practicalWhy:
-      "Quick to rig and it always works, but a magnet fakes the pull and hides the idea of matter being squeezed into a sphere.",
-  },
-  {
-    n: 2,
-    topic: "Display size",
-    accurate: "Large display",
-    accurateWhy:
-      "A wide surface gives the pull room to build, so marbles curve inward gradually the way matter really falls toward a mass. Takes the extra work of keeping a big surface round, level and steady.",
-    practical: "Small display",
-    practicalWhy:
-      "Quick to build and it stays stable on its own, but the cramped surface just drops marbles straight to the middle, hiding the gradual pull.",
-  },
-  {
-    n: 3,
-    topic: "Material",
-    accurate: "Metal marbles",
-    accurateWhy:
-      "Real mass, so they respond to the pull and roll inward, showing how matter behaves under gravity.",
-    practical: "Paper dots",
-    practicalWhy:
-      "Light, cheap and safe, but too light to move under the model's gentle pull, so they just sit there.",
-  },
-];
+const SPHERE_STEP3: StoryNode = {
+  question: "They have the materials, how should they complete the setup?",
+  options: [
+    {
+      key: "firm",
+      label: "Attach weights firmly",
+      result:
+        "They attach the weights firmly. The project proves their gravity theory, but the frame is slightly bent from the weight.",
+    },
+    {
+      key: "loose",
+      label: "Leave weights loose",
+      result:
+        "They decide to leave the weights loose to protect the frame. The project looks great, but the gravity concept is less clear.",
+    },
+  ],
+};
 
-export function storyChoicesFor(s: Student) {
-  return STORY_JUNCTIONS.map((j) => {
-    const accurate = hashOf(j.topic + "|" + s.name + "|story") % 2 === 0;
+const BOX_STEP3: StoryNode = {
+  question: "The box is ready. How should they present the gravity pull?",
+  options: [
+    {
+      key: "show",
+      label: "Show magnets in action",
+      result:
+        "They show the magnets in action. The science is very clear to judges, but the box looks a bit disorganized.",
+    },
+    {
+      key: "hide",
+      label: "Hide with a cover",
+      result:
+        "They cover the mechanism to keep the display clean. It looks professional, but the gravity experiment is hidden from view.",
+    },
+  ],
+};
+
+export const STORY_TREE: StoryNode = {
+  question: "Which frame shape should they build for their gravity model?",
+  options: [
+    {
+      key: "sphere",
+      label: "Build a spherical frame",
+      result:
+        "The team decides to build a sphere. It is the best shape to show how gravity pulls everything toward a central point.",
+      next: {
+        question:
+          "Zara worries the sphere is too weak, but Leo wants to use heavy materials to show the pull. What should they put inside?",
+        options: [
+          {
+            key: "steel",
+            label: "Use heavy steel balls",
+            result:
+              "They choose heavy steel balls, which clearly show the force of gravity, though the weight puts stress on their frame.",
+            next: SPHERE_STEP3,
+          },
+          {
+            key: "foam",
+            label: "Use soft foam balls",
+            result:
+              "They choose soft foam balls to keep the frame safe, though the force of gravity is not very noticeable.",
+            next: SPHERE_STEP3,
+          },
+        ],
+      },
+    },
+    {
+      key: "box",
+      label: "Build a square box frame",
+      result:
+        "They build a sturdy square box. It is easy to construct, but they need to figure out how to demonstrate the pull to the center.",
+      next: {
+        question:
+          "Maya wants to use magnets for pull, but Leo wants to use simple weights. What should they add to the center?",
+        options: [
+          {
+            key: "magnets",
+            label: "Add magnets at the center",
+            result:
+              "They add magnets to the center. It simulates the pull, but it makes the box look a bit cluttered.",
+            next: BOX_STEP3,
+          },
+          {
+            key: "weights",
+            label: "Use simple weights",
+            result:
+              "They use simple weights. It is neat and clean, but the effect of gravity is harder to see.",
+            next: BOX_STEP3,
+          },
+        ],
+      },
+    },
+  ],
+};
+
+export type StoryStep = {
+  level: number;
+  question: string;
+  options: StoryOption[];
+  chosenKey: string;
+};
+
+// Deterministic per-student walk down the tree: at each node, a hash of the
+// student's name and the level picks one option, then moves into whatever
+// question (if any) that option leads to.
+export function storyPathFor(s: Student): StoryStep[] {
+  const steps: StoryStep[] = [];
+  let node: StoryNode | undefined = STORY_TREE;
+  let level = 1;
+  while (node) {
+    const opts: StoryOption[] = node.options;
+    const idx = hashOf(`story|L${level}|${s.name}`) % opts.length;
+    const opt: StoryOption = opts[idx];
+    steps.push({ level, question: node.question, options: opts, chosenKey: opt.key });
+    node = opt.next;
+    level++;
+  }
+  return steps;
+}
+
+export function storyChosenOption(step: StoryStep): StoryOption {
+  return step.options.find((o) => o.key === step.chosenKey)!;
+}
+
+// The route a student took, as chosen options in order (one per tree level).
+export function storyRouteFor(s: Student): StoryOption[] {
+  return storyPathFor(s).map(storyChosenOption);
+}
+
+export function storyGroupFor(s: Student): string {
+  return storyRouteFor(s)[0]?.label ?? "";
+}
+
+// What each of the eight root-to-leaf routes says about the student's
+// priorities, keyed by "<step1>|<step2>|<step3>".
+const STORY_ROUTE_INSIGHTS: Record<string, string> = {
+  "sphere|steel|firm":
+    "Chose the physically strongest option at every step: heavy material for a clear demonstration, then locked it down even though it cost the frame its shape. This student consistently favors getting the physics right over how tidy the finished build looks.",
+  "sphere|steel|loose":
+    "Picked heavy materials to make the pull obvious, then played it safe on assembly to protect the frame, giving up some of the clarity that choice was meant to buy. Reads as a build-safety instinct winning out over following through on the science.",
+  "sphere|foam|firm":
+    "Chose the safer, gentler material, then still fastened everything down firmly even though there is little force to secure. Suggests a cautious start paired with a thoroughness that outruns what the material can actually demonstrate.",
+  "sphere|foam|loose":
+    "Played it safe at every step, protecting the frame at the cost of a gravity effect that is hard to see. The most build-safe, least physics-forward path through this branch — a model built to survive, not to prove the theory.",
+  "box|magnets|show":
+    "Chose the more technically interesting mechanism and then leaned into showing it off, prioritizing scientific clarity for the judges over a tidy presentation.",
+  "box|magnets|hide":
+    "Built the more complex, cluttered mechanism, then chose to hide it from view. Invested in getting the science right but didn't follow through on communicating it.",
+  "box|weights|show":
+    "Chose the simpler, neater mechanism but still tried to show it in action, even though the effect is harder to see. Values transparency about how the model works over a strong visual demonstration.",
+  "box|weights|hide":
+    "Chose the neat, simple route at every step and kept it clean for presentation, consistently prioritizing polish and simplicity over demonstrating the underlying physics.",
+};
+
+export function storyInterpretation(s: Student): string {
+  const route = storyRouteFor(s);
+  if (!route.length) return "No story choices recorded yet.";
+  const key = route.map((o) => o.key).join("|");
+  return (
+    STORY_ROUTE_INSIGHTS[key] ??
+    `${route.map((o) => o.label).join(" → ")}. ${route[route.length - 1].result}`
+  );
+}
+
+// Synthetic per-junction time on task (deterministic from the name and
+// level, like the choices themselves), 1-4 minutes per decision.
+export function storyStepMinutes(s: Student, level: number): number {
+  return 1 + (hashOf(`story|minutes|L${level}|${s.name}`) % 4);
+}
+
+export type StoryDetailStep = {
+  level: number;
+  question: string;
+  choice: string;
+  result: string;
+  minutes: number;
+};
+
+// Full per-junction breakdown for one student.
+export function storyDetailFor(s: Student): StoryDetailStep[] {
+  return storyPathFor(s).map((step) => {
+    const opt = storyChosenOption(step);
     return {
-      n: j.n,
-      topic: j.topic,
-      choice: accurate ? j.accurate : j.practical,
-      accurate,
+      level: step.level,
+      question: step.question,
+      choice: opt.label,
+      result: opt.result,
+      minutes: storyStepMinutes(s, step.level),
     };
   });
 }
 
-export function storyGroupFor(
-  s: Student,
-): "Mixed" | "Accuracy-first" | "Practicality-first" {
-  const acc = storyChoicesFor(s).filter((c) => c.accurate).length;
-  return acc === 3
-    ? "Accuracy-first"
-    : acc === 0
-      ? "Practicality-first"
-      : "Mixed";
+// Per-student read for the class overview: total time on task plus a plain
+// description of the route taken through the tree.
+export function storyStudentInsight(s: Student): {
+  minutes: number;
+  pattern: string;
+} {
+  const route = storyRouteFor(s);
+  const minutes = route.reduce(
+    (sum, _o, i) => sum + storyStepMinutes(s, i + 1),
+    0,
+  );
+  const pattern = route.length
+    ? `${route.map((o) => o.label).join(" → ")}.`
+    : "No story choices recorded yet.";
+  return { minutes, pattern };
 }
 
-export function storyInterpretation(s: Student): string {
-  const acc = storyChoicesFor(s).filter((c) => c.accurate).length;
-  if (acc === 3)
-    return "This student’s choices consistently favor scientific accuracy over ease of construction or visual impact.";
-  if (acc === 0)
-    return "This student’s choices consistently favor a model that is easy to build and eye-catching over one that demonstrates the physics.";
-  if (acc === 2)
-    return "This student mostly favors scientific accuracy, trading one choice for a model that is easier to build or show off.";
-  return "This student mostly favors a buildable, eye-catching model, keeping one choice that stays true to the physics.";
+// Class-level read: how the class splits at the first junction, then which
+// single full route is most common and what taking it says about that group.
+export function storyClassInsight(students: Student[]): string {
+  const total = students.length;
+  if (!total) return "No students to report on yet.";
+
+  const rootCounts = STORY_TREE.options.map((opt) => ({
+    opt,
+    n: students.filter((s) => storyRouteFor(s)[0]?.key === opt.key).length,
+  }));
+  const leader =
+    rootCounts[0].n >= rootCounts[1].n ? rootCounts[0] : rootCounts[1];
+  const rootLine = rootCounts
+    .map(
+      ({ opt, n }) =>
+        `${n}/${total} ${opt.label.charAt(0).toLowerCase()}${opt.label.slice(1)}`,
+    )
+    .join(", ");
+
+  const routeCounts = new Map<string, number>();
+  for (const s of students) {
+    const key = storyRouteFor(s)
+      .map((o) => o.key)
+      .join("|");
+    routeCounts.set(key, (routeCounts.get(key) ?? 0) + 1);
+  }
+  let modalKey = "";
+  let modalN = 0;
+  for (const [key, n] of routeCounts) {
+    if (n > modalN) {
+      modalKey = key;
+      modalN = n;
+    }
+  }
+  const modalInsight = STORY_ROUTE_INSIGHTS[modalKey];
+  const leaderName = leader.opt.label.replace(/^Build a /i, "").toLowerCase();
+
+  return `${rootLine} — the ${leaderName} is the more popular start, and each half is then asked a different second question, so the class fans out further before any two students share a full path. The single most common route (${modalN}/${total} students) ends here: ${modalInsight}`;
 }
 
 // ---------------------------------------------------------------------------

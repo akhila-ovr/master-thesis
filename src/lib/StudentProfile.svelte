@@ -13,8 +13,7 @@
     quantSummaryText,
     reflectionAnswerOf,
     reflectionSummaryText,
-    storyChoicesFor,
-    storyGroupFor,
+    storyDetailFor,
     storyInterpretation,
   } from "./expedition";
 
@@ -31,8 +30,7 @@
   $: groupMeta = groups.find((g) => g.id === student?.group);
   $: logicalSideName = debate?.right?.name;
   $: debateResult = debatePicks(student, logicalSideName);
-  $: storyChoices = storyChoicesFor(student);
-  $: storyGroup = storyGroupFor(student);
+  $: storySteps = storyDetailFor(student);
   $: reflectionAnswer = reflectionAnswerOf(student);
   $: quantPassed = QUESTION_GUIDE.filter(
     (q) => passedTypeOf(student, q.typeLabel) === true,
@@ -41,9 +39,9 @@
 
 <div class="flex items-center gap-3">
   <div
-    class="w-16 h-16 rounded-full {avatar.bg} flex items-center justify-center text-3xl shadow-sm shrink-0"
+    class="w-16 h-16 rounded-full {avatar.bg} flex items-center justify-center font-display text-xl font-bold shadow-sm shrink-0"
   >
-    {avatar.emoji}
+    {avatar.initials}
   </div>
   <div>
     <div class="font-display text-lg font-bold text-slate-900">{student.name}</div>
@@ -84,7 +82,7 @@
     {/each}
   </div>
   <p class="mt-3 text-sm text-slate-600">
-    <span class="font-semibold text-slate-400">AI insight ·</span>
+    <span class="font-semibold text-slate-400">AI insights ·</span>
     {quantSummaryText(student)}
   </p>
 </section>
@@ -100,7 +98,7 @@
     <p class="mt-2 text-sm text-slate-400">No reflection recorded.</p>
   {/if}
   <p class="mt-3 text-sm text-slate-600">
-    <span class="font-semibold text-slate-400">AI insight ·</span>
+    <span class="font-semibold text-slate-400">AI insights ·</span>
     {reflectionSummaryText(student)}
   </p>
 </section>
@@ -131,38 +129,29 @@
     {/each}
   </div>
   <p class="mt-3 text-sm text-slate-600">
-    <span class="font-semibold text-slate-400">AI insight ·</span>
+    <span class="font-semibold text-slate-400">AI insights ·</span>
     {debateSummaryText(student, logicalSideName)}
   </p>
 </section>
 
 <!-- Creative Story Builder -->
 <section class="mt-4 rounded-2xl border border-slate-200 p-4">
-  <div class="flex items-baseline justify-between gap-2">
-    <h3 class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
-      Creative Story Builder
-    </h3>
-    <span
-      class="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-bold text-slate-600"
-      >{storyGroup}</span
-    >
-  </div>
-  <div class="mt-2 flex flex-wrap gap-1.5">
-    {#each storyChoices as c}
+  <h3 class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+    Creative Story Builder
+  </h3>
+  <div class="mt-2 flex flex-wrap items-center gap-1.5 text-[11px]">
+    {#each storySteps as step, i}
+      {#if i > 0}<span class="text-slate-300">→</span>{/if}
       <span
-        class="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white px-2 py-0.5 text-[11px]"
+        class="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white px-2 py-0.5 font-medium text-slate-700"
       >
-        <span class="font-semibold text-slate-400">J{c.n}</span>
-        {c.accurate ? "⚙️" : "🎪"}
-        <span
-          class="font-medium {c.accurate ? 'text-emerald-700' : 'text-amber-700'}"
-          >{c.choice}</span
-        >
+        <span class="font-semibold text-slate-400">L{step.level}</span>
+        {step.choice}
       </span>
     {/each}
   </div>
   <p class="mt-3 text-sm text-slate-600">
-    <span class="font-semibold text-slate-400">AI insight ·</span>
+    <span class="font-semibold text-slate-400">AI insights ·</span>
     {storyInterpretation(student)}
   </p>
 </section>

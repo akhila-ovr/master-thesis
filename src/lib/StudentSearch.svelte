@@ -58,7 +58,6 @@
   <div
     class="relative z-30 flex h-full items-center gap-2 rounded-full border border-slate-200 bg-white px-4 shadow-sm"
   >
-    <span class="text-sm text-slate-400" aria-hidden="true">🔍</span>
     <input
       type="text"
       bind:value={query}
@@ -95,8 +94,8 @@
               : 'hover:bg-slate-50'}"
           >
             <span
-              class="w-8 h-8 rounded-full {a.bg} flex items-center justify-center text-lg shrink-0"
-              >{a.emoji}</span
+              class="w-8 h-8 rounded-full {a.bg} flex items-center justify-center text-[11px] font-bold shrink-0"
+              >{a.initials}</span
             >
             <span class="text-sm font-medium text-slate-800">{s.name}</span>
           </button>

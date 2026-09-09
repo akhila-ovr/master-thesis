@@ -22,14 +22,13 @@ export interface Student {
   quizAnswers?: QuizAnswer[];
 }
 
-const AVATAR_EMOJIS = ["🦊", "🐢", "🐬", "🦉", "🐧", "🦋", "🐨", "🐠", "🦜", "🦡", "🐿️", "🐙"];
 const AVATAR_BG = [
-  "bg-rose-100",
-  "bg-amber-100",
-  "bg-emerald-100",
-  "bg-sky-100",
-  "bg-violet-100",
-  "bg-pink-100",
+  "bg-rose-100 text-rose-700",
+  "bg-amber-100 text-amber-700",
+  "bg-emerald-100 text-emerald-700",
+  "bg-sky-100 text-sky-700",
+  "bg-violet-100 text-violet-700",
+  "bg-pink-100 text-pink-700",
 ];
 
 function hashOf(name: string) {
@@ -38,8 +37,15 @@ function hashOf(name: string) {
 
 export function avatarFor(name: string) {
   const h = hashOf(name);
+  const initials =
+    name
+      .split(/\s+/)
+      .map((part) => part.charAt(0))
+      .join("")
+      .slice(0, 2)
+      .toUpperCase() || "?";
   return {
-    emoji: AVATAR_EMOJIS[h % AVATAR_EMOJIS.length],
+    initials,
     bg: AVATAR_BG[h % AVATAR_BG.length],
   };
 }

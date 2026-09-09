@@ -12,17 +12,25 @@
     REFLECTION_CONCEPTS,
     REFLECTION_PROMPT,
     STORY_INTRO,
-    STORY_JUNCTIONS,
     debatePicks,
     passedTypeOf as passed,
-    storyChoicesFor,
-    storyGroupFor,
+    storyClassInsight,
     studentUtterances,
   } from "./expedition";
+  import StoryGraph from "./StoryGraph.svelte";
 
   export let students: Array<Student> = [];
   export let questionTypes: Array<{ label: string }> = [];
   export let debate: any = {};
+
+  const TABS = [
+    { id: "quant", label: "Exercises" },
+    { id: "reflection", label: "Reflection" },
+    { id: "debate", label: "Debate" },
+    { id: "story", label: "Creative Story Builder" },
+  ] as const;
+  type TabId = (typeof TABS)[number]["id"];
+  let activeTab: TabId = "quant";
 
   const SHORT_LABEL: Record<string, string> = {
     "Multiple choice (4 questions)": "Multi-choice",
@@ -30,19 +38,6 @@
     "Sorting (1 question)": "Sorting",
     "True / False (3 questions)": "True/False",
     "Drag & drop (2 questions)": "Drag-drop",
-  };
-  const TYPE_ICON: Record<string, string> = {
-    "Multi-choice": "🔘",
-    "Fill-in-blank": "✏️",
-    Sorting: "🗂️",
-    "True/False": "⚖️",
-    "True/false": "⚖️",
-    "Drag-drop": "🧲",
-  };
-  const CONCEPT_ICON: Record<string, string> = {
-    "Gravity (center point)": "🎯",
-    Mass: "⚖️",
-    "Round shape (sphere)": "🌐",
   };
   const COLUMN_ORDER = [
     "Multiple choice (4 questions)",
@@ -92,16 +87,14 @@
     : 0;
   $: quantSorted = [...quantPerColumn].sort((a, b) => a.passed - b.passed);
 
-  // --- Reflection: how many mentioned each key concept -------------------
-  $: reflectionCounts = REFLECTION_CONCEPTS.map(({ key, test, idea, counts }) => ({
-    key,
-    idea,
-    counts,
-    n: students.filter((s) => {
+  // --- Reflection: who connected each key concept in their own words -----
+  $: reflectionCounts = REFLECTION_CONCEPTS.map(({ key, test, idea, counts }) => {
+    const mentioned = students.filter((s) => {
       const t = studentUtterances(s);
       return t.length > 0 && test(t.join(" "));
-    }).length,
-  }));
+    });
+    return { key, idea, counts, n: mentioned.length, names: mentioned.map((s) => s.name) };
+  });
 
   // --- Debate: how the class's ultimate winners split ------------------
   $: logicalSideName = debate?.right?.name;
@@ -112,31 +105,13 @@
     },
     { Logical: 0, Creative: 0 } as Record<"Logical" | "Creative", number>,
   );
-
-  // --- Creative Story Builder: how the class's approach splits --------
-  $: storySplit = students.reduce(
+  $: debateNames = students.reduce(
     (acc, s) => {
-      acc[storyGroupFor(s)]++;
+      acc[debatePicks(s, logicalSideName).winner].push(s.name);
       return acc;
     },
-    { "Accuracy-first": 0, Mixed: 0, "Practicality-first": 0 } as Record<
-      string,
-      number
-    >,
+    { Logical: [], Creative: [] } as Record<"Logical" | "Creative", string[]>,
   );
-  // --- Story: which junction the class agrees on vs. splits over ---------
-  $: storyJunctionSplits = STORY_JUNCTIONS.map((j) => {
-    const acc = students.filter(
-      (s) => storyChoicesFor(s).find((c) => c.n === j.n)?.accurate,
-    ).length;
-    return { topic: j.topic, acc, prac: students.length - acc };
-  });
-  $: storyMostDivisive = [...storyJunctionSplits].sort(
-    (a, b) => Math.abs(a.acc - a.prac) - Math.abs(b.acc - b.prac),
-  )[0];
-  $: storyMostAgreed = [...storyJunctionSplits].sort(
-    (a, b) => Math.abs(b.acc - b.prac) - Math.abs(a.acc - a.prac),
-  )[0];
 
   // --- Debate: how many switched sides across the three rounds -----------
   $: debateSwingCount = students.filter(
@@ -151,50 +126,59 @@
     quantWeakest && quantStrongest && quantWeakest.label !== quantStrongest.label
       ? `The class's shakiest ground is ${QUANT_CONCEPT[quantWeakest.label]?.gap ?? quantWeakest.short.toLowerCase()} (only ${quantWeakest.passed}/${total} passed ${quantWeakest.short}), while most already have a handle on ${QUANT_CONCEPT[quantStrongest.label]?.know ?? quantStrongest.short.toLowerCase()}.`
       : "Pass rates are fairly even across exercise types — no single concept stands out as a gap.";
-  $: reflectionInsight = (() => {
-    const sorted = [...reflectionCounts].sort((a, b) => b.n - a.n);
-    const strongest = sorted[0];
-    const weakest = sorted[sorted.length - 1];
-    if (!strongest || !weakest || strongest.key === weakest.key)
-      return "Reflections are fairly even across the ideas the class was asked about.";
-    return `Most students can name ${strongest.key.toLowerCase()} (${strongest.n}/${total}), but the chain breaks down before ${weakest.key.toLowerCase()} (${weakest.n}/${total}).`;
-  })();
+  $: reflectionInsight = `The class can state that Earth is round and that gravity is involved, but few tie it to mass: ${reflectionCounts[0]?.n ?? 0}/${total} describe the pull toward a center point, ${reflectionCounts[1]?.n ?? 0}/${total} name mass as the driver, and ${reflectionCounts[2]?.n ?? 0}/${total} link the inward pull to the round shape it forms.`;
   $: debateInsight =
-    debateSwingCount > 0
-      ? `${debateSwingCount} of ${total} weren't fully convinced by either argument, switching their pick at least once across the three rounds — the final ${debateSplit.Logical >= debateSplit.Creative ? "Logical" : "Creative"} majority hides how contested the debate actually was.`
-      : `No one switched sides across the three rounds — every student's final pick reflects a consistent position, not a majority vote among mixed picks.`;
-  $: storyInsight =
-    storyMostDivisive && storyMostAgreed && storyMostDivisive.topic !== storyMostAgreed.topic
-      ? `${storyMostDivisive.topic} is the most contested junction (${storyMostDivisive.acc} accuracy vs ${storyMostDivisive.prac} practicality), while the class agrees most on ${storyMostAgreed.topic.toLowerCase()}.`
-      : `The class shows a similar accuracy-vs-practicality split at every junction.`;
+    debateSplit.Creative >= debateSplit.Logical
+      ? `Most of the class (${debateSplit.Creative}/${total}) are persuaded by the history-and-discovery case. The mass-based test, that enough mass lets gravity pull an object round, is the deciding factor for only ${debateSplit.Logical}/${total}.`
+      : `Most of the class (${debateSplit.Logical}/${total}) side with Logical, so students can use the mass-based test, that enough mass lets gravity pull an object round, as the deciding rule. The other ${debateSplit.Creative}/${total} still lead with the fairness and discovery argument.`;
+  $: storyInsight = storyClassInsight(students);
 </script>
 
 <div class="mt-4 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
   <h2 class="font-display text-lg font-bold text-slate-900">Class overview</h2>
   <p class="mt-1 text-sm text-slate-500">
-    A high-level read of the expedition. Search above to drill into any student.
+    Item-level exercise results, grouped by source. Search above for full detail
+    on any student.
   </p>
 
-  <div class="mt-4 grid items-start gap-4 md:grid-cols-2">
-    <!-- Quantitative exercises -->
-    <div class="rounded-2xl border border-slate-200 p-4">
+  <div class="mt-5 flex flex-wrap gap-2">
+    {#each TABS as t}
+      <button
+        type="button"
+        class="rounded-full px-3.5 py-1.5 text-sm font-semibold transition-colors {activeTab ===
+        t.id
+          ? 'bg-accent-600 text-white shadow-sm'
+          : 'border border-slate-200 bg-white text-slate-500 hover:text-slate-700'}"
+        on:click={() => (activeTab = t.id)}
+      >
+        {t.label}
+      </button>
+    {/each}
+  </div>
+
+  {#if activeTab === "quant"}
+    <!-- Exercises -->
+    <section class="mt-4 rounded-2xl border border-slate-200 p-4">
       <div class="flex items-baseline justify-between gap-2">
-        <div
-          class="text-xs font-semibold uppercase tracking-[0.15em] text-slate-500"
-        >
-          Quantitative exercises
-        </div>
+        <h3 class="font-display text-base font-bold text-slate-900">Exercises</h3>
         <div class="font-display text-lg font-extrabold text-slate-800">
-          {quantAvg} / {quantMax}
+          {quantAvg}
+          <span class="text-sm font-semibold text-slate-400">/ {quantMax}</span>
         </div>
       </div>
-      <div class="mt-3 space-y-1.5">
+      <div
+        class="mt-2 border-l-2 border-accent-300 bg-accent-50/50 py-1.5 pl-3 pr-2 text-xs leading-relaxed text-slate-600"
+      >
+        <span class="font-semibold text-accent-700">AI insights</span>
+        <span class="text-slate-300">·</span>
+        {quantInsight}
+      </div>
+      <div class="mt-4 space-y-2">
         {#each quantPerColumn as c}
           <div class="flex items-center gap-2">
             <div
-              class="flex w-32 shrink-0 items-center gap-1 whitespace-nowrap text-[11px] text-slate-500"
+              class="flex w-32 shrink-0 items-center gap-1 whitespace-nowrap text-[11px] font-medium text-slate-600"
             >
-              <span>{TYPE_ICON[c.short] ?? "📝"}</span>
               <span>{c.short}</span>
               <span class="group relative inline-flex">
                 <span
@@ -215,26 +199,22 @@
               ></div>
             </div>
             <div
-              class="w-9 shrink-0 text-right text-[11px] tabular-nums text-slate-400"
+              class="w-9 shrink-0 text-right text-[11px] font-semibold tabular-nums text-slate-500"
             >
               {c.passed}/{total}
             </div>
           </div>
         {/each}
       </div>
-      <p class="mt-3 text-xs text-slate-500">
-        <span class="font-semibold text-slate-400">AI insight ·</span>
-        {quantInsight}
-      </p>
-    </div>
+    </section>
+  {/if}
 
+  {#if activeTab === "reflection"}
     <!-- Reflection -->
-    <div class="rounded-2xl border border-slate-200 p-4">
-      <div
-        class="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.15em] text-slate-500"
-      >
-        <span>Reflection</span>
-        <span class="group relative inline-flex normal-case tracking-normal">
+    <section class="mt-4 rounded-2xl border border-slate-200 p-4">
+      <div class="flex items-center gap-1.5">
+        <h3 class="font-display text-base font-bold text-slate-900">Reflection</h3>
+        <span class="group relative inline-flex">
           <span
             class="flex h-3.5 w-3.5 cursor-help items-center justify-center rounded-full border border-slate-300 text-[9px] font-bold leading-none text-slate-400"
             >i</span
@@ -246,62 +226,70 @@
           </span>
         </span>
       </div>
-      <div class="mt-3 space-y-1.5">
+      <div
+        class="mt-2 border-l-2 border-accent-300 bg-accent-50/50 py-1.5 pl-3 pr-2 text-xs leading-relaxed text-slate-600"
+      >
+        <span class="font-semibold text-accent-700">AI insights</span>
+        <span class="text-slate-300">·</span>
+        {reflectionInsight}
+      </div>
+      <div class="mt-4 space-y-3">
         {#each reflectionCounts as c}
-          <div class="flex items-center gap-2">
-            <div class="flex w-28 shrink-0 items-center gap-1 text-[11px] text-slate-500">
-              <span>{CONCEPT_ICON[c.key] ?? "💡"}</span>
-              <span>{c.key}</span>
-              <span class="group relative inline-flex">
-                <span
-                  class="flex h-3.5 w-3.5 cursor-help items-center justify-center rounded-full border border-slate-300 text-[9px] font-bold leading-none text-slate-400"
-                  >i</span
-                >
-                <span
-                  class="pointer-events-none absolute left-0 top-full z-20 mt-1.5 w-64 -translate-x-2 space-y-1.5 whitespace-normal rounded-lg border border-slate-200 bg-white p-2.5 text-left text-[11px] font-normal leading-snug text-slate-600 opacity-0 shadow-lg transition-opacity group-hover:opacity-100"
-                >
-                  <span class="block font-semibold text-slate-700"
-                    >{c.idea}</span
+          <div>
+            <div class="flex items-center gap-2">
+              <div
+                class="flex w-28 shrink-0 items-center gap-1 text-[11px] font-medium text-slate-600"
+              >
+                <span>{c.key}</span>
+                <span class="group relative inline-flex">
+                  <span
+                    class="flex h-3.5 w-3.5 cursor-help items-center justify-center rounded-full border border-slate-300 text-[9px] font-bold leading-none text-slate-400"
+                    >i</span
                   >
-                  <span class="block border-t border-slate-100 pt-1.5">
-                    <span
-                      class="mb-0.5 block text-[9px] font-bold uppercase tracking-wider text-slate-400"
-                      >What counts</span
-                    >
-                    {c.counts}
+                  <span
+                    class="pointer-events-none absolute left-0 top-full z-20 mt-1.5 w-64 -translate-x-2 space-y-1.5 whitespace-normal rounded-lg border border-slate-200 bg-white p-2.5 text-left text-[11px] font-normal leading-snug text-slate-600 opacity-0 shadow-lg transition-opacity group-hover:opacity-100"
+                  >
+                    <span class="block font-semibold text-slate-700">{c.idea}</span>
+                    <span class="block border-t border-slate-100 pt-1.5">
+                      <span
+                        class="mb-0.5 block text-[9px] font-bold uppercase tracking-wider text-slate-400"
+                        >What counts</span
+                      >
+                      {c.counts}
+                    </span>
                   </span>
                 </span>
-              </span>
-            </div>
-            <div class="h-2 flex-1 rounded-full bg-slate-100">
+              </div>
+              <div class="h-2 flex-1 rounded-full bg-slate-100">
+                <div
+                  class="h-full rounded-full bg-accent-400"
+                  style="width:{pct(c.n)}%"
+                ></div>
+              </div>
               <div
-                class="h-full rounded-full bg-accent-400"
-                style="width:{pct(c.n)}%"
-              ></div>
+                class="w-9 shrink-0 text-right text-[11px] font-semibold tabular-nums text-slate-500"
+              >
+                {c.n}/{total}
+              </div>
             </div>
-            <div
-              class="w-9 shrink-0 text-right text-[11px] tabular-nums text-slate-400"
-            >
-              {c.n}/{total}
-            </div>
+            {#if c.names.length}
+              <div class="mt-1 pl-[7.5rem] text-[11px] text-slate-500">
+                <span class="font-semibold text-slate-400">Connected by</span>
+                {c.names.join(", ")}
+              </div>
+            {/if}
           </div>
         {/each}
       </div>
-      <p class="mt-3 text-xs text-slate-500">
-        <span class="font-semibold text-slate-400">AI insight ·</span>
-        {reflectionInsight}
-      </p>
-    </div>
-  </div>
+    </section>
+  {/if}
 
-  <div class="mt-4 grid items-start gap-4 md:grid-cols-2">
+  {#if activeTab === "debate"}
     <!-- Debate -->
-    <div class="rounded-2xl border border-slate-200 p-4">
-      <div
-        class="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.15em] text-slate-500"
-      >
-        <span>Debate</span>
-        <span class="group relative inline-flex normal-case tracking-normal">
+    <section class="mt-4 rounded-2xl border border-slate-200 p-4">
+      <div class="flex items-center gap-1.5">
+        <h3 class="font-display text-base font-bold text-slate-900">Debate</h3>
+        <span class="group relative inline-flex">
           <span
             class="flex h-3.5 w-3.5 cursor-help items-center justify-center rounded-full border border-slate-300 text-[9px] font-bold leading-none text-slate-400"
             >i</span
@@ -313,10 +301,17 @@
           </span>
         </span>
       </div>
-      <div class="mt-2 space-y-1 text-[11px] text-slate-500">
+      <div
+        class="mt-2 border-l-2 border-accent-300 bg-accent-50/50 py-1.5 pl-3 pr-2 text-xs leading-relaxed text-slate-600"
+      >
+        <span class="font-semibold text-accent-700">AI insights</span>
+        <span class="text-slate-300">·</span>
+        {debateInsight}
+      </div>
+      <div class="mt-4 space-y-1.5 text-[11px] text-slate-500">
         <div class="flex items-center gap-1.5">
-          <span class="text-sm">🎨</span>
-          <span class="font-semibold text-amber-700">Creative</span>
+          <span class="h-2 w-2 shrink-0 rounded-full bg-sky-400"></span>
+          <span class="font-semibold text-sky-600">Creative</span>
           <span class="group relative inline-flex">
             <span
               class="flex h-3.5 w-3.5 cursor-help items-center justify-center rounded-full border border-slate-300 text-[9px] font-bold leading-none text-slate-400"
@@ -331,7 +326,7 @@
           <span>{DEBATE_SIDES.creative.verdict}</span>
         </div>
         <div class="flex items-center gap-1.5">
-          <span class="text-sm">⚖️</span>
+          <span class="h-2 w-2 shrink-0 rounded-full bg-accent-500"></span>
           <span class="font-semibold text-accent-700">Logical</span>
           <span class="group relative inline-flex">
             <span
@@ -353,33 +348,45 @@
           style="width:{pct(debateSplit.Logical)}%"
         ></div>
         <div
-          class="bg-amber-300"
+          class="bg-sky-300"
           style="width:{pct(debateSplit.Creative)}%"
         ></div>
       </div>
       <div class="mt-2 flex justify-between text-[11px] text-slate-500">
         <span
-          ><span class="font-semibold text-slate-700">Logical</span>
+          ><span class="font-semibold text-accent-700">Logical</span>
           {debateSplit.Logical}/{total}</span
         >
         <span
-          ><span class="font-semibold text-slate-700">Creative</span>
+          ><span class="font-semibold text-sky-600">Creative</span>
           {debateSplit.Creative}/{total}</span
         >
       </div>
-      <p class="mt-3 text-xs text-slate-500">
-        <span class="font-semibold text-slate-400">AI insight ·</span>
-        {debateInsight}
-      </p>
-    </div>
+      <div class="mt-3 grid gap-2 sm:grid-cols-2">
+        <div class="rounded-lg border border-slate-200 p-2.5 text-[11px]">
+          <div class="font-semibold text-accent-700">Chose Logical</div>
+          <div class="mt-0.5 text-slate-500">
+            {debateNames.Logical.join(", ") || "None"}
+          </div>
+        </div>
+        <div class="rounded-lg border border-slate-200 p-2.5 text-[11px]">
+          <div class="font-semibold text-sky-600">Chose Creative</div>
+          <div class="mt-0.5 text-slate-500">
+            {debateNames.Creative.join(", ") || "None"}
+          </div>
+        </div>
+      </div>
+    </section>
+  {/if}
 
+  {#if activeTab === "story"}
     <!-- Creative Story Builder -->
-    <div class="rounded-2xl border border-slate-200 p-4">
-      <div
-        class="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.15em] text-slate-500"
-      >
-        <span>Creative Story Builder</span>
-        <span class="group relative inline-flex normal-case tracking-normal">
+    <section class="mt-4 rounded-2xl border border-slate-200 p-4">
+      <div class="flex items-center gap-1.5">
+        <h3 class="font-display text-base font-bold text-slate-900">
+          Creative Story Builder
+        </h3>
+        <span class="group relative inline-flex">
           <span
             class="flex h-3.5 w-3.5 cursor-help items-center justify-center rounded-full border border-slate-300 text-[9px] font-bold leading-none text-slate-400"
             >i</span
@@ -391,71 +398,14 @@
           </span>
         </span>
       </div>
-      <div class="mt-2 flex flex-wrap gap-1.5">
-        {#each STORY_JUNCTIONS as j}
-          <span
-            class="inline-flex items-center gap-1 rounded-full bg-white px-2 py-1 text-[11px] text-slate-500"
-          >
-            <span class="font-semibold text-slate-600">{j.topic}:</span>
-            <span class="text-emerald-700">⚙️ {j.accurate}</span>
-            <span class="text-slate-300">vs</span>
-            <span class="text-amber-700">🎪 {j.practical}</span>
-            <span class="group relative inline-flex">
-              <span
-                class="flex h-3.5 w-3.5 cursor-help items-center justify-center rounded-full border border-slate-300 text-[9px] font-bold leading-none text-slate-400"
-                >i</span
-              >
-              <span
-                class="pointer-events-none absolute left-1/2 top-full z-20 mt-1.5 w-max max-w-xs -translate-x-1/2 whitespace-normal rounded-lg border border-slate-200 bg-white p-2 text-left font-normal leading-snug text-slate-600 opacity-0 shadow-lg transition-opacity group-hover:opacity-100"
-              >
-                <span class="block">
-                  <span class="font-semibold text-emerald-700"
-                    >⚙️ {j.accurate}:</span
-                  >
-                  {j.accurateWhy}
-                </span>
-                <span class="mt-1 block">
-                  <span class="font-semibold text-amber-700"
-                    >🎪 {j.practical}:</span
-                  >
-                  {j.practicalWhy}
-                </span>
-              </span>
-            </span>
-          </span>
-        {/each}
-      </div>
-      <div class="mt-3 flex h-3 overflow-hidden rounded-full bg-slate-100">
-        <div
-          class="bg-emerald-300"
-          style="width:{pct(storySplit['Accuracy-first'])}%"
-        ></div>
-        <div class="bg-slate-300" style="width:{pct(storySplit.Mixed)}%"></div>
-        <div
-          class="bg-amber-300"
-          style="width:{pct(storySplit['Practicality-first'])}%"
-        ></div>
-      </div>
       <div
-        class="mt-2 flex flex-wrap gap-x-3 gap-y-0.5 text-[11px] text-slate-500"
+        class="mt-2 border-l-2 border-accent-300 bg-accent-50/50 py-1.5 pl-3 pr-2 text-xs leading-relaxed text-slate-600"
       >
-        <span
-          ><span class="font-semibold text-emerald-700">Accuracy</span>
-          {storySplit["Accuracy-first"]}</span
-        >
-        <span
-          ><span class="font-semibold text-slate-600">Mixed</span>
-          {storySplit.Mixed}</span
-        >
-        <span
-          ><span class="font-semibold text-amber-700">Practicality</span>
-          {storySplit["Practicality-first"]}</span
-        >
-      </div>
-      <p class="mt-3 text-xs text-slate-500">
-        <span class="font-semibold text-slate-400">AI insight ·</span>
+        <span class="font-semibold text-accent-700">AI insights</span>
+        <span class="text-slate-300">·</span>
         {storyInsight}
-      </p>
-    </div>
-  </div>
+      </div>
+      <StoryGraph {students} />
+    </section>
+  {/if}
 </div>
