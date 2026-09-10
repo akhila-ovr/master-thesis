@@ -59,10 +59,6 @@
     short: SHORT_LABEL[label] ?? label.replace(/\s*\(.*\)\s*$/, ""),
   }));
 
-  function pct(n: number): number {
-    return Math.round((n / total) * 100);
-  }
-
   function questionTextFor(typeLabel: string): string {
     return QUESTION_GUIDE.find((q) => q.typeLabel === typeLabel)?.text ?? "";
   }
@@ -179,45 +175,49 @@
         <span class="text-slate-300">·</span>
         {quantInsight}
       </div>
-      <div class="mt-4 space-y-3">
-        {#each quantPerColumn as c}
-          <div>
-            <div class="flex items-center gap-2">
-              <div
-                class="flex w-32 shrink-0 items-center gap-1 whitespace-nowrap text-[11px] font-medium text-slate-600"
+      <table class="mt-4 w-full border-collapse text-[11px]">
+        <thead>
+          <tr
+            class="text-left text-[10px] font-semibold uppercase tracking-wider text-slate-400"
+          >
+            <th class="pb-1.5 pr-4 font-semibold">Exercise</th>
+            <th class="pb-1.5 pr-4 font-semibold">Passed</th>
+            <th class="pb-1.5 font-semibold">Passed by</th>
+          </tr>
+        </thead>
+        <tbody>
+          {#each quantPerColumn as c}
+            <tr class="border-t border-slate-100 align-top">
+              <td
+                class="w-px whitespace-nowrap py-1.5 pr-4 font-medium text-slate-600"
               >
-                <span>{c.short}</span>
-                <span class="group relative inline-flex">
-                  <span
-                    class="flex h-3.5 w-3.5 cursor-help items-center justify-center rounded-full border border-slate-300 text-[9px] font-bold leading-none text-slate-400"
-                    >i</span
-                  >
-                  <span
-                    class="pointer-events-none absolute left-1/2 top-full z-20 mt-1.5 w-max max-w-xs -translate-x-1/2 whitespace-normal rounded-lg border border-slate-200 bg-white p-2 text-[11px] font-normal leading-snug text-slate-600 opacity-0 shadow-lg transition-opacity group-hover:opacity-100"
-                  >
-                    {questionTextFor(c.label)}
+                <span class="inline-flex items-center gap-1">
+                  <span>{c.short}</span>
+                  <span class="group relative inline-flex">
+                    <span
+                      class="flex h-3.5 w-3.5 cursor-help items-center justify-center rounded-full border border-slate-300 text-[9px] font-bold leading-none text-slate-400"
+                      >i</span
+                    >
+                    <span
+                      class="pointer-events-none absolute left-1/2 top-full z-20 mt-1.5 w-max max-w-xs -translate-x-1/2 whitespace-normal rounded-lg border border-slate-200 bg-white p-2 text-[11px] font-normal leading-snug text-slate-600 opacity-0 shadow-lg transition-opacity group-hover:opacity-100"
+                    >
+                      {questionTextFor(c.label)}
+                    </span>
                   </span>
                 </span>
-              </div>
-              <div class="h-2 flex-1 rounded-full bg-slate-100">
-                <div
-                  class="h-full rounded-full bg-accent-400"
-                  style="width:{pct(c.passed)}%"
-                ></div>
-              </div>
-              <div
-                class="w-9 shrink-0 text-right text-[11px] font-semibold tabular-nums text-slate-500"
+              </td>
+              <td
+                class="w-px whitespace-nowrap py-1.5 pr-4 font-semibold tabular-nums text-slate-500"
               >
                 {c.passed}/{total}
-              </div>
-            </div>
-            <div class="mt-1 pl-[8.5rem] text-[11px] text-slate-500">
-              <span class="font-semibold text-slate-400">Passed by</span>
-              {c.passedBy.join(", ") || "None"}
-            </div>
-          </div>
-        {/each}
-      </div>
+              </td>
+              <td class="py-1.5 text-slate-500">
+                {c.passedBy.join(", ") || "None"}
+              </td>
+            </tr>
+          {/each}
+        </tbody>
+      </table>
     </section>
   {/if}
 
@@ -245,54 +245,56 @@
         <span class="text-slate-300">·</span>
         {reflectionInsight}
       </div>
-      <div class="mt-4 space-y-3">
-        {#each reflectionCounts as c}
-          <div>
-            <div class="flex items-center gap-2">
-              <div
-                class="flex w-28 shrink-0 items-center gap-1 text-[11px] font-medium text-slate-600"
+      <table class="mt-4 w-full border-collapse text-[11px]">
+        <thead>
+          <tr
+            class="text-left text-[10px] font-semibold uppercase tracking-wider text-slate-400"
+          >
+            <th class="pb-1.5 pr-4 font-semibold">Concept</th>
+            <th class="pb-1.5 pr-4 font-semibold">Connected</th>
+            <th class="pb-1.5 font-semibold">Connected by</th>
+          </tr>
+        </thead>
+        <tbody>
+          {#each reflectionCounts as c}
+            <tr class="border-t border-slate-100 align-top">
+              <td
+                class="w-px whitespace-nowrap py-1.5 pr-4 font-medium text-slate-600"
               >
-                <span>{c.key}</span>
-                <span class="group relative inline-flex">
-                  <span
-                    class="flex h-3.5 w-3.5 cursor-help items-center justify-center rounded-full border border-slate-300 text-[9px] font-bold leading-none text-slate-400"
-                    >i</span
-                  >
-                  <span
-                    class="pointer-events-none absolute left-0 top-full z-20 mt-1.5 w-64 -translate-x-2 space-y-1.5 whitespace-normal rounded-lg border border-slate-200 bg-white p-2.5 text-left text-[11px] font-normal leading-snug text-slate-600 opacity-0 shadow-lg transition-opacity group-hover:opacity-100"
-                  >
-                    <span class="block font-semibold text-slate-700">{c.idea}</span>
-                    <span class="block border-t border-slate-100 pt-1.5">
-                      <span
-                        class="mb-0.5 block text-[9px] font-bold uppercase tracking-wider text-slate-400"
-                        >What counts</span
-                      >
-                      {c.counts}
+                <span class="inline-flex items-center gap-1">
+                  <span>{c.key}</span>
+                  <span class="group relative inline-flex">
+                    <span
+                      class="flex h-3.5 w-3.5 cursor-help items-center justify-center rounded-full border border-slate-300 text-[9px] font-bold leading-none text-slate-400"
+                      >i</span
+                    >
+                    <span
+                      class="pointer-events-none absolute left-0 top-full z-20 mt-1.5 w-64 -translate-x-2 space-y-1.5 whitespace-normal rounded-lg border border-slate-200 bg-white p-2.5 text-left text-[11px] font-normal leading-snug text-slate-600 opacity-0 shadow-lg transition-opacity group-hover:opacity-100"
+                    >
+                      <span class="block font-semibold text-slate-700">{c.idea}</span>
+                      <span class="block border-t border-slate-100 pt-1.5">
+                        <span
+                          class="mb-0.5 block text-[9px] font-bold uppercase tracking-wider text-slate-400"
+                          >What counts</span
+                        >
+                        {c.counts}
+                      </span>
                     </span>
                   </span>
                 </span>
-              </div>
-              <div class="h-2 flex-1 rounded-full bg-slate-100">
-                <div
-                  class="h-full rounded-full bg-accent-400"
-                  style="width:{pct(c.n)}%"
-                ></div>
-              </div>
-              <div
-                class="w-9 shrink-0 text-right text-[11px] font-semibold tabular-nums text-slate-500"
+              </td>
+              <td
+                class="w-px whitespace-nowrap py-1.5 pr-4 font-semibold tabular-nums text-slate-500"
               >
                 {c.n}/{total}
-              </div>
-            </div>
-            {#if c.names.length}
-              <div class="mt-1 pl-[7.5rem] text-[11px] text-slate-500">
-                <span class="font-semibold text-slate-400">Connected by</span>
-                {c.names.join(", ")}
-              </div>
-            {/if}
-          </div>
-        {/each}
-      </div>
+              </td>
+              <td class="py-1.5 text-slate-500">
+                {c.names.join(", ") || "None"}
+              </td>
+            </tr>
+          {/each}
+        </tbody>
+      </table>
     </section>
   {/if}
 
@@ -322,7 +324,6 @@
       </div>
       <div class="mt-4 space-y-1.5 text-[11px] text-slate-500">
         <div class="flex items-center gap-1.5">
-          <span class="h-2 w-2 shrink-0 rounded-full bg-sky-400"></span>
           <span class="font-semibold text-sky-600">Creative</span>
           <span class="group relative inline-flex">
             <span
@@ -338,7 +339,6 @@
           <span>{DEBATE_SIDES.creative.verdict}</span>
         </div>
         <div class="flex items-center gap-1.5">
-          <span class="h-2 w-2 shrink-0 rounded-full bg-accent-500"></span>
           <span class="font-semibold text-accent-700">Logical</span>
           <span class="group relative inline-flex">
             <span
@@ -354,17 +354,7 @@
           <span>{DEBATE_SIDES.logical.verdict}</span>
         </div>
       </div>
-      <div class="mt-3 flex h-3 overflow-hidden rounded-full bg-slate-100">
-        <div
-          class="bg-accent-400"
-          style="width:{pct(debateSplit.Logical)}%"
-        ></div>
-        <div
-          class="bg-sky-300"
-          style="width:{pct(debateSplit.Creative)}%"
-        ></div>
-      </div>
-      <div class="mt-2 flex justify-between text-[11px] text-slate-500">
+      <div class="mt-3 flex justify-between text-[11px] text-slate-500">
         <span
           ><span class="font-semibold text-accent-700">Logical</span>
           {debateSplit.Logical}/{total}</span

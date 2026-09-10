@@ -93,8 +93,8 @@
               : 'hover:bg-slate-50'}"
           >
             <span
-              class="w-8 h-8 rounded-full {a.bg} flex items-center justify-center text-[11px] font-bold shrink-0"
-              >{a.initials}</span
+              class="w-8 h-8 rounded-full {a.bg} flex items-center justify-center text-lg shrink-0"
+              >{a.emoji}</span
             >
             <span class="text-sm font-medium text-slate-800">{s.name}</span>
           </button>

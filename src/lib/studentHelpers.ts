@@ -21,6 +21,12 @@ export interface Student {
   quizAnswers?: QuizAnswer[];
 }
 
+// One animal per student, picked deterministically from the name hash so a
+// student always gets the same face across the search dropdown and profile.
+const AVATAR_EMOJIS = [
+  "🦊", "🐢", "🐬", "🦉", "🐧", "🦋", "🐨", "🐠", "🦜", "🦡", "🐿️", "🐙",
+];
+
 const AVATAR_BG = [
   "bg-rose-100 text-rose-700",
   "bg-amber-100 text-amber-700",
@@ -45,6 +51,7 @@ export function avatarFor(name: string) {
       .toUpperCase() || "?";
   return {
     initials,
+    emoji: AVATAR_EMOJIS[h % AVATAR_EMOJIS.length],
     bg: AVATAR_BG[h % AVATAR_BG.length],
   };
 }

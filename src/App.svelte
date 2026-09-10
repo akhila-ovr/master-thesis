@@ -405,9 +405,14 @@ Lina: i dont really know they were just floating up there`,
 
     <header class="mb-6 flex flex-col sm:flex-row gap-3">
       <div
-        class="flex-1 flex items-center gap-3.5 rounded-full px-5 py-3 shadow-lg shadow-accent-200/40"
+        class="flex-1 flex items-center gap-3.5 rounded-full pl-2.5 pr-5 py-2 shadow-lg shadow-accent-200/40"
         style="background: linear-gradient(100deg, #FDE68A 0%, #F9A8D4 45%, #C4B5FD 100%);"
       >
+        <div
+          class="w-11 h-11 rounded-full bg-white flex items-center justify-center text-xl shadow-sm shrink-0"
+        >
+          🌍
+        </div>
         <h1 class="font-display text-lg font-bold text-violet-950">
           Why is the Earth round?
         </h1>

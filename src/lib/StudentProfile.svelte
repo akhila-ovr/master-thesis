@@ -32,9 +32,9 @@
 
 <div class="flex items-center gap-3">
   <div
-    class="w-16 h-16 rounded-full {avatar.bg} flex items-center justify-center font-display text-xl font-bold shadow-sm shrink-0"
+    class="w-16 h-16 rounded-full {avatar.bg} flex items-center justify-center text-3xl shadow-sm shrink-0"
   >
-    {avatar.initials}
+    {avatar.emoji}
   </div>
   <div class="font-display text-lg font-bold text-slate-900">{student.name}</div>
 </div>
