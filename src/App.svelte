@@ -244,7 +244,9 @@
     "Amara K.": { mc: true,  fill: true,  sort: true,  tf: false, drag: true  },
     "James T.": { mc: true,  fill: true,  sort: false, tf: true,  drag: true  },
     "Luca B.":  { mc: true,  fill: true,  sort: true,  tf: false, drag: true  },
-    "Priya N.": { mc: true,  fill: true,  sort: false, tf: true,  drag: true  },
+    // T/F marked wrong on purpose: her reflection shows the "time, not mass,
+    // rounds an asteroid" misconception that this exercise tests.
+    "Priya N.": { mc: true,  fill: true,  sort: false, tf: false, drag: true  },
     "Yara H.":  { mc: true,  fill: true,  sort: true,  tf: true,  drag: true  },
     "Sofia M.": { mc: true,  fill: true,  sort: false, tf: true,  drag: true  },
     "Lina P.":  { mc: true,  fill: true,  sort: false, tf: true,  drag: true  },

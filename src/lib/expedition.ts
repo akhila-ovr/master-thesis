@@ -92,7 +92,7 @@ export const REFLECTION_CONCEPTS: Array<{
   counts: string;
 }> = [
   {
-    key: "Gravity (center point)",
+    key: "Gravity",
     test: (t) => /\b(middle|cent(er|re)|inwards?)\b/i.test(t),
     idea: 'Gravity pulls matter toward the center, so "down" everywhere points inward.',
     counts:
@@ -109,7 +109,7 @@ export const REFLECTION_CONCEPTS: Array<{
       'The student links a mass or weight word to a stronger or weaker pull ("heavier planets have more gravity", "not enough mass so its gravity is too weak"). Naming "mass" on its own does not count.',
   },
   {
-    key: "Round shape (sphere)",
+    key: "Sphere",
     test: (t) =>
       /\b(sphere|spherical|round|ball)\b/i.test(t) &&
       /\b(pull|squash|squeez|squish|form|make|made|becom)/i.test(t),
