@@ -16,12 +16,10 @@
     debateRoundMinutes,
     debateStudentInsight,
     passedTypeOf as passed,
-    quantSummaryLine,
     quizPartsFor,
     quizRetriesFor,
     quizScoreFor,
     reflectionMinutesFor,
-    storyClassInsight,
     TYPE_UNIT_LABEL,
     studentUtterances,
   } from "./expedition";
@@ -142,19 +140,8 @@
 
   const debateRoundsInfo = DEBATE_ROUNDS;
 
-  // --- Class-level "AI Insights", two sentences per section --------------
   $: total = students.length;
 
-  $: reflectionInsight = `The class can state that Earth is round and that gravity is involved, but few tie it to mass: ${reflectionGroups[0]?.mentions.length ?? 0}/${total} describe the pull toward a center point, ${reflectionGroups[1]?.mentions.length ?? 0}/${total} name mass as the driver, and ${reflectionGroups[2]?.mentions.length ?? 0}/${total} link the inward pull to the round shape it forms.`;
-
-  $: debateInsight =
-    debateGroups.Creative.length >= debateGroups.Logical.length
-      ? `Most of the class (${debateGroups.Creative.length}/${total}) are persuaded by the history-and-discovery case. The mass-based test, that enough mass lets gravity pull an object round, is the deciding factor for only ${debateGroups.Logical.length}/${total}.`
-      : `Most of the class (${debateGroups.Logical.length}/${total}) side with Logical, so students can use the mass-based test, that enough mass lets gravity pull an object round, as the deciding rule. The other ${debateGroups.Creative.length}/${total} still lead with the fairness and discovery argument.`;
-
-  $: storyInsight = storyClassInsight(students);
-
-  const knowledgeSummary = quantSummaryLine;
   const questionGuide = QUESTION_GUIDE;
 
   // --- Quantitative: per-student score out of the exercise count + class
@@ -214,13 +201,6 @@
     columns below check whether each student's own words show they connected
     them.
   </p>
-
-  <div class="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-3">
-    <div class="text-xs font-bold uppercase tracking-wide text-slate-500">
-      AI Insights
-    </div>
-    <p class="mt-1 text-sm text-slate-600">{reflectionInsight}</p>
-  </div>
 
   <div class="mt-4 grid gap-4 md:grid-cols-3 items-start">
     {#each reflectionGroups as g, i}
@@ -300,13 +280,6 @@
   <blockquote class="mt-3 rounded-xl border-l-4 border-pink-400 bg-pink-50/60 px-4 py-3 text-sm font-semibold text-slate-800">
     {DEBATE_QUESTION}
   </blockquote>
-
-  <div class="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-3">
-    <div class="text-xs font-bold uppercase tracking-wide text-slate-500">
-      AI Insights
-    </div>
-    <p class="mt-1 text-sm text-slate-600">{debateInsight}</p>
-  </div>
 
   <div class="mt-3 grid gap-3 sm:grid-cols-2">
     {#each VERDICT_COLS as v}
@@ -396,13 +369,6 @@
   </div>
   <p class="mt-2 text-sm text-slate-600">{STORY_INTRO}</p>
 
-  <div class="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-3">
-    <div class="text-xs font-bold uppercase tracking-wide text-slate-500">
-      AI Insights
-    </div>
-    <p class="mt-1 text-sm text-slate-600">{storyInsight}</p>
-  </div>
-
   <StoryMindMap {students} />
   </section>
   {/if}
@@ -445,18 +411,6 @@
   </div>
 
   <div class="mt-3 rounded-xl border border-slate-200 bg-slate-50 p-3">
-    <p class="text-sm text-slate-600">
-      <span class="text-xs font-bold uppercase tracking-wide text-slate-500"
-        >AI insights</span
-      >
-      <span class="text-slate-400"> · </span>
-      The class's shakiest ground is how mass makes objects round (only 3/10
-      passed Sorting), while most already have a handle on gravity cause and
-      effect.
-    </p>
-  </div>
-
-  <div class="mt-3 rounded-xl border border-slate-200 bg-slate-50 p-3">
     <div class="text-xs font-bold uppercase tracking-wide text-slate-500">
       What each exercise asks
     </div>
@@ -490,7 +444,6 @@
               </div>
             </th>
           {/each}
-          <th class="px-3 py-3 text-left font-semibold w-72">AI Insights</th>
         </tr>
       </thead>
       <tbody class="divide-y divide-slate-100">
@@ -528,10 +481,6 @@
                 {/if}
               </td>
             {/each}
-            <td
-              class="px-3 py-3 text-left align-top text-xs leading-relaxed text-slate-600 w-72"
-              >{knowledgeSummary(s)}</td
-            >
           </tr>
         {/each}
       </tbody>

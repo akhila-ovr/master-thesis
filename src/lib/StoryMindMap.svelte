@@ -11,7 +11,6 @@
   import {
     STORY_TREE,
     storyDetailFor,
-    storyInterpretation,
     storyRouteFor,
     type StoryOption,
   } from "./expedition";
@@ -343,13 +342,6 @@
               <p class="mt-1 text-xs leading-snug text-slate-500">{d.result}</p>
             </div>
           {/each}
-        </div>
-
-        <div class="mt-3 rounded-lg border border-slate-200 bg-white p-3">
-          <div class="text-[10px] font-bold uppercase tracking-wide text-slate-500">
-            AI Insights
-          </div>
-          <p class="mt-1 text-sm text-slate-600">{storyInterpretation(student)}</p>
         </div>
       </div>
     {/if}
