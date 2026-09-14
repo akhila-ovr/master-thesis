@@ -465,3 +465,148 @@ export const DEBATE_SIDES = {
   },
 };
 
+// ---------------------------------------------------------------------------
+// Per-section "AI Insights" text, per student
+// ---------------------------------------------------------------------------
+
+function joinList(items: string[]): string {
+  if (items.length <= 1) return items.join("");
+  return items.slice(0, -1).join(", ") + " and " + items[items.length - 1];
+}
+
+// What passing / missing each quiz exercise type suggests the student grasps.
+export const QUANT_CONCEPT: Record<string, { know: string; gap: string }> = {
+  "Multiple choice (1 question)": {
+    know: "which way gravity pulls (inward, toward the core)",
+    gap: "which way gravity actually pulls",
+  },
+  "Fill in blanks (1 question)": {
+    know: "the key vocabulary (matter, gravity, core)",
+    gap: "how matter, gravity and core fit together",
+  },
+  "Sorting (1 question)": {
+    know: "mass as what gives a body its round shape",
+    gap: "how mass makes an object round",
+  },
+  "True / False (1 question)": {
+    know: "why a small rock stays lumpy",
+    gap: "that it is mass, not time, that rounds a body",
+  },
+  "Drag & drop (1 question)": {
+    know: "matching gravity causes to their effects",
+    gap: "linking each gravity cause to its effect",
+  },
+};
+
+export function quantConceptsFor(s: Student): {
+  known: string[];
+  gaps: string[];
+} {
+  const known: string[] = [];
+  const gaps: string[] = [];
+  for (const q of QUESTION_GUIDE) {
+    const res = passedTypeOf(s, q.typeLabel);
+    const c = QUANT_CONCEPT[q.typeLabel];
+    if (!c) continue;
+    if (res === true) known.push(c.know);
+    else if (res === false) gaps.push(c.gap);
+  }
+  return { known, gaps };
+}
+
+// Terse one-liner for the class roster's "AI Insights" column. Phrasing keys
+// off how many of the five exercise types the student passed, so a student who
+// scraped a single pass reads as struggling, not "solid on" that one concept.
+export function quantSummaryLine(s: Student): string {
+  const { known, gaps } = quantConceptsFor(s);
+  const passed = known.length;
+  const total = passed + gaps.length;
+  if (!total) return "No exercise data yet.";
+  if (!gaps.length) return "Secure across all five exercises.";
+  if (!passed)
+    return "Missed every exercise; the mass, gravity and sphere link is not there yet.";
+  if (passed <= 2)
+    return `Passed just ${passed} of ${total}; still shaky on ${gaps[0]}.`;
+  if (gaps.length === 1)
+    return `Solid across the exercises; the one gap is ${gaps[0]}.`;
+  return `Solid on ${known[0]}; shaky on ${gaps[0]}.`;
+}
+
+// Total retries a student needed across all five exercise types, for the
+// individual view's AI Insights prose below.
+function totalQuizRetries(s: Student): number {
+  return QUESTION_GUIDE.reduce((sum, q) => sum + quizRetriesFor(s, q.typeLabel), 0);
+}
+
+// Fuller prose for the individual student view.
+export function quantSummaryText(s: Student): string {
+  const { known, gaps } = quantConceptsFor(s);
+  const passed = known.length;
+  const total = passed + gaps.length;
+  if (!total) return "No exercise answers recorded yet.";
+  const retries = totalQuizRetries(s);
+  const retryNote = retries
+    ? ` Needed ${retries} ${retries === 1 ? "retry" : "retries"} along the way.`
+    : "";
+  if (!gaps.length)
+    return `Passed all five exercise types, comfortable with ${joinList(known)}.${retryNote}`;
+  if (!passed)
+    return `Missed every exercise type. The core idea that mass creates the gravity which pulls matter into a sphere is not landing yet.${retryNote}`;
+  if (passed <= 2)
+    return `Passed just ${passed} of ${total} exercise types, with gaps across most of the exercises, from ${gaps[0]} to ${gaps[gaps.length - 1]}.${retryNote}`;
+  if (gaps.length === 1)
+    return `Passed ${passed} of ${total} exercise types. Solid on ${joinList(known)}; the one remaining gap is ${gaps[0]}.${retryNote}`;
+  return `Passed ${passed} of ${total} exercise types. Solid on ${joinList(known)}, but still shaky on ${joinList(gaps)}.${retryNote}`;
+}
+
+export function reflectionConceptsFor(s: Student): {
+  mentioned: string[];
+  missing: string[];
+} {
+  const turns = studentUtterances(s);
+  const text = turns.join(" ");
+  const mentioned: string[] = [];
+  const missing: string[] = [];
+  for (const c of REFLECTION_CONCEPTS) {
+    if (turns.length && c.test(text)) mentioned.push(c.key);
+    else missing.push(c.key);
+  }
+  return { mentioned, missing };
+}
+
+export function reflectionSummaryText(s: Student): string {
+  const { mentioned, missing } = reflectionConceptsFor(s);
+  if (!mentioned.length)
+    return "The reflection names none of the three key ideas: the pull toward a center point, mass as the driver, or the inward pull forming a sphere.";
+  const covered = `The reflection covers ${joinList(mentioned.map((m) => m.toLowerCase()))}`;
+  return missing.length
+    ? `${covered}, but not ${joinList(missing.map((m) => m.toLowerCase()))}.`
+    : `${covered}, touching all three key ideas.`;
+}
+
+export function debateSummaryText(
+  s: Student,
+  logicalSideName: string | undefined,
+): string {
+  const { picks, winner } = debatePicks(s, logicalSideName);
+  const logical = picks.filter((p) => p === "Logical").length;
+  const consistency =
+    logical === 3 || logical === 0
+      ? `This student picked ${winner} in all three rounds`
+      : `This student split the rounds, landing on ${winner} by a ${Math.max(logical, 3 - logical)}-${Math.min(logical, 3 - logical)} majority`;
+  const takeaway =
+    winner === "Logical"
+      ? "and leans on the mass-based test (enough mass, so gravity pulls it round) as the deciding rule."
+      : "and is moved more by the fairness and discovery case than by the physical definition of a planet.";
+  return `${consistency} ${takeaway}`;
+}
+
+export function storyInterpretation(s: Student): string {
+  const route = storyRouteFor(s);
+  if (!route.length) return "No story choices recorded yet.";
+  const key = route.map((o) => o.key).join("|");
+  return (
+    STORY_ROUTE_INSIGHTS[key] ??
+    `${route.map((o) => o.label).join(" → ")}. ${route[route.length - 1].result}`
+  );
+}

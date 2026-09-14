@@ -1,8 +1,8 @@
 <!-- StudentProfile.svelte: one student's full detail, laid out by activity:
-     quantitative exercises, reflection, debate, and the creative story --
-     the raw response data only, no time-on-task or AI-generated
-     interpretation layered on top. Rendered inside the header search detail
-     page; navigation controls (back / close) are left to the parent. -->
+     quantitative exercises, reflection, debate, and the creative story.
+     Each section closes with an AI Insights note on how this student did.
+     Rendered inside the header search detail page; navigation controls
+     (back / close) are left to the parent. -->
 <script lang="ts">
   import { avatarFor, type Student } from "./studentHelpers";
   import {
@@ -12,9 +12,13 @@
     REFLECTION_PROMPT,
     STORY_INTRO,
     debatePicks,
+    debateSummaryText,
+    quantSummaryText,
     quizPartsFor,
     quizRetriesFor,
     reflectionAnswerOf,
+    reflectionSummaryText,
+    storyInterpretation,
     storyPathFor,
   } from "./expedition";
 
@@ -71,6 +75,12 @@
       </li>
     {/each}
   </ul>
+  <div class="mt-3 rounded-xl border border-slate-200 bg-slate-50 p-3">
+    <div class="text-xs font-bold uppercase tracking-wide text-slate-500">
+      AI Insights
+    </div>
+    <p class="mt-1 text-sm text-slate-600">{quantSummaryText(student)}</p>
+  </div>
 </section>
 
 <!-- Reflection -->
@@ -84,6 +94,12 @@
   {:else}
     <p class="mt-2 text-sm text-slate-400">No reflection recorded.</p>
   {/if}
+  <div class="mt-3 rounded-xl border border-slate-200 bg-slate-50 p-3">
+    <div class="text-xs font-bold uppercase tracking-wide text-slate-500">
+      AI Insights
+    </div>
+    <p class="mt-1 text-sm text-slate-600">{reflectionSummaryText(student)}</p>
+  </div>
 </section>
 
 <!-- Debate -->
@@ -116,6 +132,15 @@
       >{debateResult.winner}</span
     >
   </div>
+
+  <div class="mt-3 rounded-xl border border-slate-200 bg-slate-50 p-3">
+    <div class="text-xs font-bold uppercase tracking-wide text-slate-500">
+      AI Insights
+    </div>
+    <p class="mt-1 text-sm text-slate-600">
+      {debateSummaryText(student, logicalSideName)}
+    </p>
+  </div>
 </section>
 
 <!-- Creative Story Builder -->
@@ -131,9 +156,15 @@
       {#if opt}
         <div class="rounded-lg border border-slate-200 bg-emerald-50 p-2">
           <span class="text-sm font-semibold text-slate-800">{opt.label}</span>
-          <p class="mt-0.5 text-xs text-slate-500">{opt.result}</p>
         </div>
       {/if}
     {/each}
+  </div>
+
+  <div class="mt-3 rounded-xl border border-slate-200 bg-slate-50 p-3">
+    <div class="text-xs font-bold uppercase tracking-wide text-slate-500">
+      AI Insights
+    </div>
+    <p class="mt-1 text-sm text-slate-600">{storyInterpretation(student)}</p>
   </div>
 </section>

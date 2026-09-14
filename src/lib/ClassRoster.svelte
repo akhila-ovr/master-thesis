@@ -14,6 +14,7 @@
     STORY_INTRO,
     debatePicks,
     quizScoreFor,
+    quantSummaryLine,
     storyClassInsight,
     studentUtterances,
   } from "./expedition";
@@ -363,24 +364,28 @@
     </dl>
   </div>
 
-  <div class="mt-3 flex justify-center">
-    <table class="w-full max-w-xs text-sm">
+  <div class="mt-3 overflow-x-auto">
+    <table class="w-full min-w-[520px] text-sm">
       <thead>
         <tr
           class="border-b border-slate-200 text-[11px] font-semibold uppercase tracking-wider text-slate-400"
         >
           <th class="py-3 pr-3 text-left font-semibold" aria-label="Student"></th>
           <th class="px-3 py-3 text-center font-semibold">Score</th>
+          <th class="px-3 py-3 text-left font-semibold w-72">AI Insights</th>
         </tr>
       </thead>
       <tbody class="divide-y divide-slate-100">
         {#each students as s}
           <tr>
-            <td class="py-3 pr-3 text-left font-medium text-slate-800 whitespace-nowrap"
+            <td class="py-3 pr-3 text-left font-medium text-slate-800 whitespace-nowrap align-top"
               >{s.name}</td
             >
-            <td class="px-3 py-3 text-center font-display font-bold text-slate-700"
+            <td class="px-3 py-3 text-center align-top font-display font-bold text-slate-700"
               >{scoreOf(s)}/{quantMax}</td
+            >
+            <td class="px-3 py-3 text-left align-top text-xs leading-relaxed text-slate-600 w-72"
+              >{quantSummaryLine(s)}</td
             >
           </tr>
         {/each}
