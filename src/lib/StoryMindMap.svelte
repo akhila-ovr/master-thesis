@@ -7,14 +7,8 @@
      guessed from character counts), so text never gets clipped regardless
      of how it wraps. -->
 <script lang="ts">
-  import { avatarFor, type Student } from "./studentHelpers";
-  import {
-    STORY_TREE,
-    storyDetailFor,
-    storyInterpretation,
-    storyRouteFor,
-    type StoryOption,
-  } from "./expedition";
+  import type { Student } from "./studentHelpers";
+  import { STORY_TREE, storyRouteFor, type StoryOption } from "./expedition";
 
   export let students: Array<Student> = [];
 
@@ -23,30 +17,27 @@
     col: number;
     label: string;
     result: string;
-    nextQuestion?: string;
     isRoot: boolean;
   };
   type Box = NodeDef & { x: number; y: number; w: number; h: number };
   type Edge = { from: string; to: string };
   type Route = { student: Student; keys: string[]; color: string };
 
-  const COL_W = 250;
-  const COL_GAP = 90;
+  const COL_W = 170;
+  const COL_GAP = 60;
   const MARGIN = 24;
   const NAME_COL_W = 168;
-  const ROW_GAP = 24; // vertical breathing room between boxes in a column
-  const MIN_BOX_H = 90;
+  const ROW_GAP = 20; // vertical breathing room between boxes in a column
+  const MIN_BOX_H = 40;
 
   // Rough guess used only until the real DOM measurement arrives (avoids a
-  // large flash of an under/over-sized box on first paint).
-  function estimateHeight(o: { label?: string; result: string; nextQuestion?: string }, isRoot: boolean): number {
-    const padY = 20;
+  // large flash of an under/over-sized box on first paint). Non-root boxes
+  // only ever show their label now, so their height tracks just that.
+  function estimateHeight(o: { label?: string; result: string }, isRoot: boolean): number {
+    const padY = 16;
     if (isRoot) return padY + Math.max(1, Math.ceil(o.result.length / 34)) * 17;
     const labelLines = Math.max(1, Math.ceil((o.label?.length ?? 0) / 28));
-    const resultLines = Math.max(1, Math.ceil(o.result.length / 38));
-    let h = padY + labelLines * 16 + resultLines * 15;
-    if (o.nextQuestion) h += 6 + Math.max(1, Math.ceil((o.nextQuestion.length + 6) / 42)) * 13;
-    return h;
+    return padY + labelLines * 16;
   }
 
   const col1Opts = STORY_TREE.options; // sphere, box
@@ -67,10 +58,17 @@
 
   const nodeDefs: NodeDef[] = [
     { id: "root", col: 0, label: "", result: STORY_TREE.question, isRoot: true },
-    ...col1Opts.map((o) => ({ id: o.key, col: 1, label: o.label, result: o.result, nextQuestion: o.next?.question, isRoot: false })),
-    ...col2Opts.map((o) => ({ id: o.key, col: 2, label: o.label, result: o.result, nextQuestion: o.next?.question, isRoot: false })),
+    ...col1Opts.map((o) => ({ id: o.key, col: 1, label: o.label, result: o.result, isRoot: false })),
+    ...col2Opts.map((o) => ({ id: o.key, col: 2, label: o.label, result: o.result, isRoot: false })),
     ...col3Opts.map((o) => ({ id: o.key, col: 3, label: o.label, result: o.result, isRoot: false })),
   ];
+
+  // Lookup from a box's id back to its original StoryOption, so a clicked
+  // option can reveal what comes next (its `.next` node) below the diagram
+  // instead of it being drawn inline in every box.
+  const optionByKey: Record<string, StoryOption> = Object.fromEntries(
+    [...col1Opts, ...col2Opts, ...col3Opts].map((o) => [o.key, o]),
+  );
 
   const edges: Edge[] = [];
   col1Opts.forEach((o) => edges.push({ from: "root", to: o.key }));
@@ -190,21 +188,23 @@
     routes: routes.filter((r) => r.keys[r.keys.length - 1] === leaf.key),
   }));
 
-  function countThrough(id: string): number {
-    return routes.filter((r) => r.keys.includes(id)).length;
-  }
-
   let pinned: string | null = null;
   let hovered: string | null = null;
   function toggle(name: string) {
     pinned = pinned === name ? null : name;
   }
   $: active = pinned ?? hovered;
+
+  let selectedOption: string | null = null;
+  function toggleOption(id: string) {
+    selectedOption = selectedOption === id ? null : id;
+  }
+  $: selectedNext = selectedOption ? optionByKey[selectedOption]?.next : undefined;
 </script>
 
 <div class="mt-3">
   <p class="text-xs italic text-slate-400">
-    Click a name (or a line) to trace that student's route, see time spent per decision, and what each choice means; click again to clear.
+    Click a name (or a line) to trace that student's route through the tree; click an option box to see what question comes next. Click again to clear either.
   </p>
   <div class="mt-2 overflow-x-auto rounded-xl border border-slate-200 bg-white">
     <svg
@@ -244,33 +244,26 @@
            use:measureBox, so text is never clipped -->
       {#each Object.values(boxes) as box (box.id)}
         <foreignObject x={box.x} y={box.y - box.h / 2} width={box.w} height={box.h}>
-          <div
-            xmlns="http://www.w3.org/1999/xhtml"
-            class="rounded-xl border border-slate-200 bg-slate-50 p-2.5"
-            use:measureBox={box.id}
-          >
-            {#if box.isRoot}
-              <p class="text-xs font-medium text-slate-700">{box.result}</p>
-            {:else}
-              <div class="flex items-start justify-between gap-1">
-                <span class="text-xs font-semibold text-slate-800">{box.label}</span>
-                <span
-                  class="shrink-0 rounded-full bg-slate-200 px-1.5 text-[10px] font-bold text-slate-600"
-                  title="Students who reached this point"
-                >
-                  {countThrough(box.id)}
-                </span>
-              </div>
-              <p class="mt-1 text-[11px] leading-snug text-slate-500">
-                {box.result}
-              </p>
-              {#if box.nextQuestion}
-                <p class="mt-1 text-[10px] italic leading-snug text-slate-400">
-                  Next: {box.nextQuestion}
-                </p>
-              {/if}
-            {/if}
-          </div>
+          {#if box.isRoot}
+            <div xmlns="http://www.w3.org/1999/xhtml" class="px-1 py-1" use:measureBox={box.id}>
+              <p class="text-xs font-medium text-slate-600">{box.result}</p>
+            </div>
+          {:else}
+            <div
+              xmlns="http://www.w3.org/1999/xhtml"
+              class="cursor-pointer rounded-md border bg-white px-1.5 py-1 text-xs font-semibold {selectedOption ===
+              box.id
+                ? 'border-accent-400 text-accent-600'
+                : 'border-slate-200 text-slate-700'}"
+              use:measureBox={box.id}
+              role="button"
+              tabindex="0"
+              on:click={() => toggleOption(box.id)}
+              on:keydown={(e) => (e.key === "Enter" || e.key === " ") && toggleOption(box.id)}
+            >
+              {box.label}
+            </div>
+          {/if}
         </foreignObject>
       {/each}
 
@@ -299,59 +292,33 @@
     </svg>
   </div>
 
-  {#if pinned}
-    {@const student = students.find((s) => s.name === pinned)}
-    {#if student}
-      {@const avatar = avatarFor(student.name)}
-      {@const detail = storyDetailFor(student)}
-      {@const totalMinutes = detail.reduce((sum, d) => sum + d.minutes, 0)}
-      <div class="mt-3 rounded-xl border border-slate-200 bg-slate-50 p-4">
-        <div class="flex items-start justify-between gap-2">
-          <div class="flex items-center gap-2.5">
-            <div
-              class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-lg {avatar.bg}"
-            >
-              {avatar.emoji}
-            </div>
-            <div>
-              <div class="text-sm font-bold text-slate-800">{student.name}</div>
-              <div class="text-xs text-slate-500">
-                {totalMinutes} min across {detail.length} decisions
-              </div>
-            </div>
-          </div>
-          <button
-            type="button"
-            class="rounded-full px-2 py-0.5 text-xs text-slate-400 hover:bg-slate-200 hover:text-slate-600"
-            on:click={() => (pinned = null)}
-          >
-            Clear ✕
-          </button>
+  {#if selectedOption}
+    <div class="mt-3 rounded-xl border border-accent-200 bg-accent-50 p-4">
+      <div class="flex items-start justify-between gap-2">
+        <div class="text-[10px] font-bold uppercase tracking-wide text-accent-600">
+          Next step
         </div>
-
-        <div class="mt-3 space-y-2.5">
-          {#each detail as d}
-            <div class="rounded-lg border border-slate-200 bg-white p-3">
-              <div class="flex items-center justify-between gap-2">
-                <span class="text-[10px] font-bold uppercase tracking-wide text-slate-500">
-                  Step {d.level}
-                </span>
-                <span class="text-[10px] font-semibold text-slate-400">{d.minutes} min</span>
-              </div>
-              <p class="mt-1 text-sm font-medium text-slate-700">{d.question}</p>
-              <p class="mt-1.5 text-sm font-semibold text-emerald-700">Chose: {d.choice}</p>
-              <p class="mt-1 text-xs leading-snug text-slate-500">{d.result}</p>
-            </div>
+        <button
+          type="button"
+          class="rounded-full px-2 py-0.5 text-xs text-slate-400 hover:bg-slate-200 hover:text-slate-600"
+          on:click={() => (selectedOption = null)}
+        >
+          Clear ✕
+        </button>
+      </div>
+      {#if selectedNext}
+        <p class="mt-1 text-sm font-medium text-slate-700">{selectedNext.question}</p>
+        <div class="mt-2 flex flex-wrap gap-1.5">
+          {#each selectedNext.options as opt}
+            <span class="rounded-full bg-white px-2 py-0.5 text-xs font-semibold text-slate-600">
+              {opt.label}
+            </span>
           {/each}
         </div>
-
-        <div class="mt-3 rounded-lg border border-slate-200 bg-white p-3">
-          <div class="text-[10px] font-bold uppercase tracking-wide text-slate-500">
-            AI Insights
-          </div>
-          <p class="mt-1 text-sm text-slate-600">{storyInterpretation(student)}</p>
-        </div>
-      </div>
-    {/if}
+      {:else}
+        <p class="mt-1 text-sm text-slate-500">This choice ends the story; there's no further question.</p>
+      {/if}
+    </div>
   {/if}
+
 </div>

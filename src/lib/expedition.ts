@@ -64,19 +64,6 @@ export function quizUnitsFor(s: Student, typeLabel: string): Outcome[] {
   return answers.flatMap((a) => a.units ?? [a.outcome]);
 }
 
-// What one unit of a type actually is -- shown as a caption under its row of
-// right/wrong marks so "3 of 3" reads as "3 questions" (each with its own
-// one right answer) rather than looking like 3 right answers inside a
-// single question, which is what fill-in-blank/drag & drop/sorting's units
-// (blanks/matches/items) are.
-export const TYPE_UNIT_LABEL: Record<string, string> = {
-  "Multiple choice (1 question)": "questions",
-  "True / False (1 question)": "questions",
-  "Fill in blanks (1 question)": "blanks",
-  "Drag & drop (1 question)": "matches",
-  "Sorting (1 question)": "items",
-};
-
 // True/false is the one type where a retry isn't meaningful: with only two
 // options, getting it wrong once leaves exactly one option left, so a
 // "correct after retry" there is a guaranteed guess rather than real
@@ -123,22 +110,6 @@ export function quizScoreFor(s: Student, typeLabel: string): number {
   return 0;
 }
 
-// Synthetic per-exercise time on task (deterministic from the name and
-// exercise type, like the other per-student minutes elsewhere). Most
-// students land 1-3 minutes per question; Priya and James are slower
-// (2-3 min) and Noah is faster (1-2 min).
-const QUESTION_MINUTE_RANGES: Record<string, [number, number]> = {
-  "Priya N.": [2, 3],
-  "James T.": [2, 3],
-  "Noah R.": [1, 2],
-};
-
-export function quizQuestionMinutes(s: Student, typeLabel: string): number {
-  const [min, max] = QUESTION_MINUTE_RANGES[s.name] ?? [1, 3];
-  const span = max - min + 1;
-  return min + (hashOf(`quiz|minutes|${typeLabel}|${s.name}`) % span);
-}
-
 // ---------------------------------------------------------------------------
 // Reflection
 // ---------------------------------------------------------------------------
@@ -159,11 +130,6 @@ export function reflectionAnswerOf(s: Student): string {
   return studentUtterances(s)[0] ?? "";
 }
 
-// Synthetic time on task for the reflection chat (deterministic from the
-// name, like the other per-student minutes elsewhere), 2-7 minutes.
-export function reflectionMinutesFor(s: Student): number {
-  return 2 + (hashOf(s.name + "|reflection-minutes") % 6);
-}
 
 // The expedition's three learning goals, matching the reflection prompt
 // "What did you learn about gravity, mass, and why Earth is round?". Each
@@ -446,65 +412,6 @@ const STORY_ROUTE_INSIGHTS: Record<string, string> = {
     "Chose the neat, simple route at every step and kept it clean for presentation, consistently prioritizing polish and simplicity over demonstrating the underlying physics.",
 };
 
-export function storyInterpretation(s: Student): string {
-  const route = storyRouteFor(s);
-  if (!route.length) return "No story choices recorded yet.";
-  const key = route.map((o) => o.key).join("|");
-  return (
-    STORY_ROUTE_INSIGHTS[key] ??
-    `${route.map((o) => o.label).join(" → ")}. ${route[route.length - 1].result}`
-  );
-}
-
-// Synthetic per-junction time on task (deterministic from the name and
-// level, like the choices themselves), 1-4 minutes per decision.
-export function storyStepMinutes(s: Student, level: number): number {
-  if (s.name === "Noah R." || s.name === "James T.") return 0;
-  return 1 + (hashOf(`story|minutes|L${level}|${s.name}`) % 4);
-}
-
-export type StoryDetailStep = {
-  level: number;
-  question: string;
-  choice: string;
-  result: string;
-  minutes: number;
-};
-
-// Full per-junction breakdown for one student: the question they were asked,
-// what they chose, what that choice means (its trade-off), and how long they
-// spent on it. Powers the detail view when a student is selected.
-export function storyDetailFor(s: Student): StoryDetailStep[] {
-  return storyPathFor(s).map((step) => {
-    const opt = storyChosenOption(step);
-    return {
-      level: step.level,
-      question: step.question,
-      choice: opt.label,
-      result: opt.result,
-      minutes: storyStepMinutes(s, step.level),
-    };
-  });
-}
-
-// Per-student story read for the class overview: total time on task (the sum
-// of the per-junction times above) plus a plain description of the route
-// taken through the tree.
-export function storyStudentInsight(s: Student): {
-  minutes: number;
-  pattern: string;
-} {
-  const route = storyRouteFor(s);
-  const minutes = route.reduce(
-    (sum, _o, i) => sum + storyStepMinutes(s, i + 1),
-    0,
-  );
-  const pattern = route.length
-    ? `${route.map((o) => o.label).join(" → ")}.`
-    : "No story choices recorded yet.";
-  return { minutes, pattern };
-}
-
 // Class-level read: how the class splits at the very first junction (since
 // every later question depends on it), then which single full route is most
 // common and what taking it says about that group of students.
@@ -558,169 +465,3 @@ export const DEBATE_SIDES = {
   },
 };
 
-// ---------------------------------------------------------------------------
-// Per-section "AI Insights" text, per student
-// ---------------------------------------------------------------------------
-
-function joinList(items: string[]): string {
-  if (items.length <= 1) return items.join("");
-  return items.slice(0, -1).join(", ") + " and " + items[items.length - 1];
-}
-
-// What passing / missing each quiz exercise type suggests the student grasps.
-export const QUANT_CONCEPT: Record<string, { know: string; gap: string }> = {
-  "Multiple choice (1 question)": {
-    know: "which way gravity pulls (inward, toward the core)",
-    gap: "which way gravity actually pulls",
-  },
-  "Fill in blanks (1 question)": {
-    know: "the key vocabulary (matter, gravity, core)",
-    gap: "how matter, gravity and core fit together",
-  },
-  "Sorting (1 question)": {
-    know: "mass as what gives a body its round shape",
-    gap: "how mass makes an object round",
-  },
-  "True / False (1 question)": {
-    know: "why a small rock stays lumpy",
-    gap: "that it is mass, not time, that rounds a body",
-  },
-  "Drag & drop (1 question)": {
-    know: "matching gravity causes to their effects",
-    gap: "linking each gravity cause to its effect",
-  },
-};
-
-export function quantConceptsFor(s: Student): {
-  known: string[];
-  gaps: string[];
-} {
-  const known: string[] = [];
-  const gaps: string[] = [];
-  for (const q of QUESTION_GUIDE) {
-    const res = passedTypeOf(s, q.typeLabel);
-    const c = QUANT_CONCEPT[q.typeLabel];
-    if (!c) continue;
-    if (res === true) known.push(c.know);
-    else if (res === false) gaps.push(c.gap);
-  }
-  return { known, gaps };
-}
-
-// Terse one-liner for the class roster's "AI Insights" column. Phrasing keys
-// off how many of the five exercise types the student passed, so a student who
-// scraped a single pass reads as struggling, not "solid on" that one concept.
-export function quantSummaryLine(s: Student): string {
-  const { known, gaps } = quantConceptsFor(s);
-  const passed = known.length;
-  const total = passed + gaps.length;
-  if (!total) return "No exercise data yet.";
-  if (!gaps.length) return "Secure across all five exercises.";
-  if (!passed)
-    return "Missed every exercise; the mass, gravity and sphere link is not there yet.";
-  if (passed <= 2)
-    return `Passed just ${passed} of ${total}; still shaky on ${gaps[0]}.`;
-  if (gaps.length === 1)
-    return `Solid across the exercises; the one gap is ${gaps[0]}.`;
-  return `Solid on ${known[0]}; shaky on ${gaps[0]}.`;
-}
-
-// Total retries a student needed across all five exercise types, for the
-// individual view's AI Insights prose below.
-function totalQuizRetries(s: Student): number {
-  return QUESTION_GUIDE.reduce((sum, q) => sum + quizRetriesFor(s, q.typeLabel), 0);
-}
-
-// Fuller prose for the individual student view.
-export function quantSummaryText(s: Student): string {
-  const { known, gaps } = quantConceptsFor(s);
-  const passed = known.length;
-  const total = passed + gaps.length;
-  if (!total) return "No exercise answers recorded yet.";
-  const retries = totalQuizRetries(s);
-  const retryNote = retries
-    ? ` Needed ${retries} ${retries === 1 ? "retry" : "retries"} along the way.`
-    : "";
-  if (!gaps.length)
-    return `Passed all five exercise types, comfortable with ${joinList(known)}.${retryNote}`;
-  if (!passed)
-    return `Missed every exercise type. The core idea that mass creates the gravity which pulls matter into a sphere is not landing yet.${retryNote}`;
-  if (passed <= 2)
-    return `Passed just ${passed} of ${total} exercise types, with gaps across most of the exercises, from ${gaps[0]} to ${gaps[gaps.length - 1]}.${retryNote}`;
-  if (gaps.length === 1)
-    return `Passed ${passed} of ${total} exercise types. Solid on ${joinList(known)}; the one remaining gap is ${gaps[0]}.${retryNote}`;
-  return `Passed ${passed} of ${total} exercise types. Solid on ${joinList(known)}, but still shaky on ${joinList(gaps)}.${retryNote}`;
-}
-
-export function reflectionConceptsFor(s: Student): {
-  mentioned: string[];
-  missing: string[];
-} {
-  const turns = studentUtterances(s);
-  const text = turns.join(" ");
-  const mentioned: string[] = [];
-  const missing: string[] = [];
-  for (const c of REFLECTION_CONCEPTS) {
-    if (turns.length && c.test(text)) mentioned.push(c.key);
-    else missing.push(c.key);
-  }
-  return { mentioned, missing };
-}
-
-export function reflectionSummaryText(s: Student): string {
-  const { mentioned, missing } = reflectionConceptsFor(s);
-  if (!mentioned.length)
-    return "The reflection names none of the three key ideas: the pull toward a center point, mass as the driver, or the inward pull forming a sphere.";
-  const covered = `The reflection covers ${joinList(mentioned.map((m) => m.toLowerCase()))}`;
-  return missing.length
-    ? `${covered}, but not ${joinList(missing.map((m) => m.toLowerCase()))}.`
-    : `${covered}, touching all three key ideas.`;
-}
-
-export function debateSummaryText(
-  s: Student,
-  logicalSideName: string | undefined,
-): string {
-  const { picks, winner } = debatePicks(s, logicalSideName);
-  const logical = picks.filter((p) => p === "Logical").length;
-  const consistency =
-    logical === 3 || logical === 0
-      ? `This student picked ${winner} in all three rounds`
-      : `This student split the rounds, landing on ${winner} by a ${Math.max(logical, 3 - logical)}-${Math.min(logical, 3 - logical)} majority`;
-  const takeaway =
-    winner === "Logical"
-      ? "and leans on the mass-based test (enough mass, so gravity pulls it round) as the deciding rule."
-      : "and is moved more by the fairness and discovery case than by the physical definition of a planet.";
-  return `${consistency} ${takeaway}`;
-}
-
-// Per-student debate read for the class overview: a synthetic time on task
-// (this mock stores no real timings, so it is derived deterministically from
-// the name like the scores and picks) plus a plain description of how the
-// three round picks moved.
-// Synthetic per-round time on task (deterministic from the name and round,
-// like the picks themselves), 1-4 minutes per round.
-export function debateRoundMinutes(s: Student, round: number): number {
-  if (s.name === "Noah R." || s.name === "James T.") return 0;
-  return 1 + (hashOf(`debate|minutes|r${round}|${s.name}`) % 4);
-}
-
-export function debateStudentInsight(
-  s: Student,
-  logicalSideName: string | undefined,
-): { minutes: number; pattern: string } {
-  const { picks, winner } = debatePicks(s, logicalSideName);
-  const minutes = [1, 2, 3].reduce((sum, r) => sum + debateRoundMinutes(s, r), 0);
-  const switches = picks.filter((p, i) => i > 0 && p !== picks[i - 1]).length;
-  let pattern: string;
-  if (switches === 0) {
-    pattern = `Held ${winner} across all three rounds, a firm and settled position.`;
-  } else if (switches === 1) {
-    const flipRound =
-      picks.findIndex((p, i) => i > 0 && p !== picks[i - 1]) + 1;
-    pattern = `Changed side once, in round ${flipRound}; landed on ${winner} by a 2-1 split.`;
-  } else {
-    pattern = `Switched side every round; landed on ${winner} 2-1 but never settled.`;
-  }
-  return { minutes, pattern };
-}
