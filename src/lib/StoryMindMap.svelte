@@ -7,8 +7,8 @@
      guessed from character counts), so text never gets clipped regardless
      of how it wraps. -->
 <script lang="ts">
-  import type { Student } from "./studentHelpers";
-  import { STORY_TREE, storyRouteFor, type StoryOption } from "./expedition";
+  import { avatarFor, type Student } from "./studentHelpers";
+  import { STORY_TREE, storyInterpretation, storyRouteFor, type StoryOption } from "./expedition";
 
   export let students: Array<Student> = [];
 
@@ -204,7 +204,7 @@
 
 <div class="mt-3">
   <p class="text-xs italic text-slate-400">
-    Click a name (or a line) to trace that student's route through the tree; click an option box to see what question comes next. Click again to clear either.
+    Click a name (or a line) to trace that student's route and see the AI Insights read on it; click an option box to see what question comes next. Click again to clear either.
   </p>
   <div class="mt-2 overflow-x-auto rounded-xl border border-slate-200 bg-white">
     <svg
@@ -321,4 +321,36 @@
     </div>
   {/if}
 
+  {#if pinned}
+    {@const student = students.find((s) => s.name === pinned)}
+    {#if student}
+      {@const avatar = avatarFor(student.name)}
+      <div class="mt-3 rounded-xl border border-slate-200 bg-slate-50 p-4">
+        <div class="flex items-start justify-between gap-2">
+          <div class="flex items-center gap-2.5">
+            <div
+              class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-lg {avatar.bg}"
+            >
+              {avatar.emoji}
+            </div>
+            <div class="text-sm font-bold text-slate-800">{student.name}</div>
+          </div>
+          <button
+            type="button"
+            class="rounded-full px-2 py-0.5 text-xs text-slate-400 hover:bg-slate-200 hover:text-slate-600"
+            on:click={() => (pinned = null)}
+          >
+            Clear ✕
+          </button>
+        </div>
+
+        <div class="mt-3 rounded-lg border border-slate-200 bg-white p-3">
+          <div class="text-[10px] font-bold uppercase tracking-wide text-slate-500">
+            AI Insights
+          </div>
+          <p class="mt-1 text-sm text-slate-600">{storyInterpretation(student)}</p>
+        </div>
+      </div>
+    {/if}
+  {/if}
 </div>
