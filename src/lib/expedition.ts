@@ -123,6 +123,22 @@ export function quizScoreFor(s: Student, typeLabel: string): number {
   return 0;
 }
 
+// Synthetic per-exercise time on task (deterministic from the name and
+// exercise type, like the other per-student minutes elsewhere). Most
+// students land 1-3 minutes per question; Priya and James are slower
+// (2-3 min) and Noah is faster (1-2 min).
+const QUESTION_MINUTE_RANGES: Record<string, [number, number]> = {
+  "Priya N.": [2, 3],
+  "James T.": [2, 3],
+  "Noah R.": [1, 2],
+};
+
+export function quizQuestionMinutes(s: Student, typeLabel: string): number {
+  const [min, max] = QUESTION_MINUTE_RANGES[s.name] ?? [1, 3];
+  const span = max - min + 1;
+  return min + (hashOf(`quiz|minutes|${typeLabel}|${s.name}`) % span);
+}
+
 // ---------------------------------------------------------------------------
 // Reflection
 // ---------------------------------------------------------------------------
@@ -443,6 +459,7 @@ export function storyInterpretation(s: Student): string {
 // Synthetic per-junction time on task (deterministic from the name and
 // level, like the choices themselves), 1-4 minutes per decision.
 export function storyStepMinutes(s: Student, level: number): number {
+  if (s.name === "Noah R." || s.name === "James T.") return 0;
   return 1 + (hashOf(`story|minutes|L${level}|${s.name}`) % 4);
 }
 
@@ -608,21 +625,31 @@ export function quantSummaryLine(s: Student): string {
   return `Solid on ${known[0]}; shaky on ${gaps[0]}.`;
 }
 
+// Total retries a student needed across all five exercise types, for the
+// individual view's AI Insights prose below.
+function totalQuizRetries(s: Student): number {
+  return QUESTION_GUIDE.reduce((sum, q) => sum + quizRetriesFor(s, q.typeLabel), 0);
+}
+
 // Fuller prose for the individual student view.
 export function quantSummaryText(s: Student): string {
   const { known, gaps } = quantConceptsFor(s);
   const passed = known.length;
   const total = passed + gaps.length;
   if (!total) return "No exercise answers recorded yet.";
+  const retries = totalQuizRetries(s);
+  const retryNote = retries
+    ? ` Needed ${retries} ${retries === 1 ? "retry" : "retries"} along the way.`
+    : "";
   if (!gaps.length)
-    return `Passed all five exercise types, comfortable with ${joinList(known)}.`;
+    return `Passed all five exercise types, comfortable with ${joinList(known)}.${retryNote}`;
   if (!passed)
-    return "Missed every exercise type. The core idea that mass creates the gravity which pulls matter into a sphere is not landing yet.";
+    return `Missed every exercise type. The core idea that mass creates the gravity which pulls matter into a sphere is not landing yet.${retryNote}`;
   if (passed <= 2)
-    return `Passed just ${passed} of ${total} exercise types, with gaps across most of the exercises, from ${gaps[0]} to ${gaps[gaps.length - 1]}.`;
+    return `Passed just ${passed} of ${total} exercise types, with gaps across most of the exercises, from ${gaps[0]} to ${gaps[gaps.length - 1]}.${retryNote}`;
   if (gaps.length === 1)
-    return `Passed ${passed} of ${total} exercise types. Solid on ${joinList(known)}; the one remaining gap is ${gaps[0]}.`;
-  return `Passed ${passed} of ${total} exercise types. Solid on ${joinList(known)}, but still shaky on ${joinList(gaps)}.`;
+    return `Passed ${passed} of ${total} exercise types. Solid on ${joinList(known)}; the one remaining gap is ${gaps[0]}.${retryNote}`;
+  return `Passed ${passed} of ${total} exercise types. Solid on ${joinList(known)}, but still shaky on ${joinList(gaps)}.${retryNote}`;
 }
 
 export function reflectionConceptsFor(s: Student): {
@@ -674,6 +701,7 @@ export function debateSummaryText(
 // Synthetic per-round time on task (deterministic from the name and round,
 // like the picks themselves), 1-4 minutes per round.
 export function debateRoundMinutes(s: Student, round: number): number {
+  if (s.name === "Noah R." || s.name === "James T.") return 0;
   return 1 + (hashOf(`debate|minutes|r${round}|${s.name}`) % 4);
 }
 

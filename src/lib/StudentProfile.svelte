@@ -17,12 +17,14 @@
     debateSummaryText,
     quantSummaryText,
     quizPartsFor,
+    quizQuestionMinutes,
     quizRetriesFor,
     reflectionAnswerOf,
     reflectionMinutesFor,
     reflectionSummaryText,
     storyInterpretation,
     storyPathFor,
+    storyStepMinutes,
     TYPE_UNIT_LABEL,
   } from "./expedition";
 
@@ -77,9 +79,12 @@
               </div>
             {/if}
           </span>
-          <span>
+          <span class="flex-1">
             {q.text}
             <span class="text-xs text-slate-400">({TYPE_UNIT_LABEL[q.typeLabel]})</span>
+          </span>
+          <span class="mt-0.5 shrink-0 whitespace-nowrap text-xs font-semibold text-slate-400">
+            {quizQuestionMinutes(student, q.typeLabel)} min
           </span>
         {/if}
       </li>
@@ -203,8 +208,13 @@
   <div class="mt-3 space-y-3">
     {#each storyPath as step, i}
       <div class="rounded-xl border border-slate-200 p-3">
-        <div class="text-xs font-bold uppercase tracking-wide text-slate-500">
-          Step {i + 1}
+        <div class="flex items-center justify-between gap-2">
+          <span class="text-xs font-bold uppercase tracking-wide text-slate-500">
+            Step {i + 1}
+          </span>
+          <span class="text-xs font-semibold text-slate-400">
+            {storyStepMinutes(student, step.level)} min
+          </span>
         </div>
         <p class="mt-1 text-sm font-medium text-slate-700">{step.question}</p>
         <div class="mt-2 space-y-2">
