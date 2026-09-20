@@ -151,6 +151,13 @@
         (quantScores.reduce((a, n) => a + n, 0) / quantScores.length) * 10,
       ) / 10
     : 0;
+  // Per exercise type: how many students got it fully correct.
+  $: quantPerColumn = columns.map((c) => ({
+    short: c.short,
+    passed: students.filter((s) => quizScoreFor(s, c.label) === 1).length,
+  }));
+  $: quantStrongest = [...quantPerColumn].sort((a, b) => b.passed - a.passed)[0];
+  $: quantWeakest = [...quantPerColumn].sort((a, b) => a.passed - b.passed)[0];
 </script>
 
 <div class="mt-4 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
@@ -337,12 +344,26 @@
     Exercises
   </div>
 
-  <div class="mt-2 inline-block rounded-xl border border-slate-200 bg-slate-50 p-3">
-    <div class="text-xs font-semibold uppercase tracking-wide text-slate-500">
-      Class average
+  <div class="mt-2 grid gap-3 sm:grid-cols-2">
+    <div class="rounded-xl border border-slate-200 bg-slate-50 p-3">
+      <div class="text-xs font-semibold uppercase tracking-wide text-slate-500">
+        Class average
+      </div>
+      <div class="mt-0.5 font-display text-xl font-extrabold text-slate-800">
+        {quantAvg} / {quantMax}
+      </div>
     </div>
-    <div class="mt-0.5 font-display text-xl font-extrabold text-slate-800">
-      {quantAvg} / {quantMax}
+    <div class="rounded-xl border border-slate-200 bg-slate-50 p-3">
+      <div class="text-xs font-semibold uppercase tracking-wide text-slate-500">
+        Strongest / weakest
+      </div>
+      <div class="mt-0.5 text-sm text-slate-700">
+        <span class="font-semibold">{quantStrongest?.short}</span>
+        {quantStrongest?.passed ?? 0}/{total}
+        <span class="text-slate-400">·</span>
+        <span class="font-semibold">{quantWeakest?.short}</span>
+        {quantWeakest?.passed ?? 0}/{total}
+      </div>
     </div>
   </div>
 
