@@ -157,7 +157,6 @@
         (quantScores.reduce((a, n) => a + n, 0) / quantScores.length) * 10,
       ) / 10
     : 0;
-  $: quantNeedsSupport = quantScores.filter((n) => n < quantMax / 2).length;
   $: quantPerColumn = columns.map((c) => ({
     short: c.short,
     passed: students.filter((s) => passed(s, c.label) === true).length,
@@ -379,21 +378,13 @@
     Exercises
   </div>
 
-  <div class="mt-2 grid gap-3 sm:grid-cols-3">
+  <div class="mt-2 grid gap-3 sm:grid-cols-2">
     <div class="rounded-xl border border-slate-200 bg-slate-50 p-3">
       <div class="text-xs font-semibold uppercase tracking-wide text-slate-500">
         Class average
       </div>
       <div class="mt-0.5 font-display text-xl font-extrabold text-slate-800">
         {quantAvg} / {quantMax}
-      </div>
-    </div>
-    <div class="rounded-xl border border-slate-200 bg-slate-50 p-3">
-      <div class="text-xs font-semibold uppercase tracking-wide text-slate-500">
-        Under half passed
-      </div>
-      <div class="mt-0.5 font-display text-xl font-extrabold text-slate-800">
-        {quantNeedsSupport} / {total}
       </div>
     </div>
     <div class="rounded-xl border border-slate-200 bg-slate-50 p-3">
